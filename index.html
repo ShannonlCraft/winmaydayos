@@ -1544,7 +1544,7 @@ let gcalAccessToken = null;
 /* ── Storage ── */
 function loadCalEvents(){try{return JSON.parse(localStorage.getItem(K_CAL)||'[]');}catch(e){return[];}}
 function saveCalEvents(a){localStorage.setItem(K_CAL,JSON.stringify(a));}
-function loadGcalCfg(){try{return JSON.parse(localStorage.getItem(K_GCAL_CFG)||'{}');}catch(e){return{};}}
+function loadGcalCfg(){const DEFAULT_CLIENT_ID='67070123114-inj6f9l9ftkck2a886qf900asfog27q6.apps.googleusercontent.com';try{const c=JSON.parse(localStorage.getItem(K_GCAL_CFG)||'{}');if(!c.clientId)c.clientId=DEFAULT_CLIENT_ID;return c;}catch(e){return{clientId:DEFAULT_CLIENT_ID};}}
 function saveGcalCfg(c){localStorage.setItem(K_GCAL_CFG,JSON.stringify(c));}
 
 /* ── Open / close ── */
@@ -1552,10 +1552,14 @@ function openCalendar(){
   calViewYear=new Date().getFullYear();
   calViewMonth=new Date().getMonth();
   calSelectedDate=todayStr();
-  // Restore token from session if available
+  // Restore token from session, or silently re-auth if connected
   if(!gcalAccessToken){
     const stored=sessionStorage.getItem('gcalToken');
-    if(stored)gcalAccessToken=stored;
+    if(stored){gcalAccessToken=stored;}
+    else{
+      const cfg=loadGcalCfg();
+      if(cfg.connected&&cfg.clientId){silentGcalAuth(cfg.clientId);}
+    }
   }
   el('calOverlay').classList.add('open');
   el('calDayOverlay').classList.remove('open');
@@ -1894,16 +1898,62 @@ function openAddEvent(){
   el('calEvAllDay').value='0';
   calPickedColor=EV_COLORS[0];
   renderColorPicker();
-  updateGcalLink();
-  // Show whether it will sync to Google
+  // Restore token from session
+  if(!gcalAccessToken){const t=sessionStorage.getItem('gcalToken');if(t)gcalAccessToken=t;}
   const cfg=loadGcalCfg();
-  const hasToken=!!(gcalAccessToken||sessionStorage.getItem('gcalToken'));
-  const willSync=cfg.connected&&hasToken;
+  // If connected but no token, silently re-auth before opening
+  if(cfg.connected&&cfg.clientId&&!gcalAccessToken){
+    el('calAddSource').textContent='Reconnecting…';
+    el('calAddSource').style.background='var(--orange-s)';
+    el('calAddSource').style.color='var(--orange)';
+    el('calAddOverlay').classList.add('open');
+    setTimeout(()=>el('calEvTitle').focus(),100);
+    silentGcalAuth(cfg.clientId);
+    updateGcalLink();
+    return;
+  }
+  updateGcalLink();
+  const willSync=cfg.connected&&!!gcalAccessToken;
   el('calAddSource').textContent=willSync?'→ Google Calendar':'Local Only';
   el('calAddSource').style.background=willSync?'rgba(37,99,235,0.15)':'var(--orange-s)';
   el('calAddSource').style.color=willSync?'#2563EB':'var(--orange)';
   el('calAddOverlay').classList.add('open');
   setTimeout(()=>el('calEvTitle').focus(),100);
+}
+
+function silentGcalAuth(clientId){
+  if(!window.google||!window.google.accounts){
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.onload=()=>doSilentAuth(clientId);
+    document.head.appendChild(s);
+  } else {
+    doSilentAuth(clientId);
+  }
+}
+
+function doSilentAuth(clientId){
+  try{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:clientId,
+      scope:GCAL_SCOPE+' email profile',
+      callback:(resp)=>{
+        if(resp.error||!resp.access_token)return;
+        gcalAccessToken=resp.access_token;
+        sessionStorage.setItem('gcalToken',resp.access_token);
+        // Update the badge now that we have a token
+        const src=el('calAddSource');
+        if(src){src.textContent='→ Google Calendar';src.style.background='rgba(37,99,235,0.15)';src.style.color='#2563EB';}
+        updateGcalLink();
+      }
+    });
+    // prompt:'' means no UI shown - uses existing Google session
+    tc.requestAccessToken({prompt:''});
+  }catch(e){
+    // If silent auth fails, user needs to reconnect manually
+    const src=el('calAddSource');
+    if(src){src.textContent='Local Only';src.style.background='var(--orange-s)';src.style.color='var(--orange)';}
+  }
 }
 
 function closeAddEvent(){el('calAddOverlay').classList.remove('open');calEditingId=null;}
