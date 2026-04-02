@@ -468,7 +468,27 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
 .header-next-event-dot{width:5px;height:5px;border-radius:50%;background:var(--orange);flex-shrink:0;}
 .header-next-event-text{font-size:10px;font-weight:700;color:var(--orange);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+
+/* ══ FIREBASE SYNC UI ══ */
+.sync-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--g1);border-radius:var(--r-lg);margin:8px 16px;}
+.sync-icon{width:36px;height:36px;border-radius:10px;background:var(--g2);border:1px solid var(--sep2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sync-body{flex:1;}
+.sync-label{font-size:14px;font-weight:700;color:var(--white);}
+.sync-sub{font-size:11px;font-weight:500;color:var(--l3);margin-top:2px;}
+.sync-btn{height:30px;padding:0 14px;border-radius:8px;background:var(--orange);color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+.sync-btn.connected{background:var(--g3);color:var(--l2);}
+.sync-btn:hover{opacity:0.85;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--g4);display:inline-block;margin-right:4px;transition:background .3s;}
+.sync-dot.active{background:#22c55e;}
+.sync-dot.syncing{background:var(--orange);animation:syncPulse 1s infinite;}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:0.3}}
 </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 </head>
@@ -522,6 +542,7 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
         <textarea class="modal-notes" id="modalNotes" placeholder="What does this mean to me today…" rows="4" oninput="saveNote()"></textarea>
         <div class="modal-saved" id="notesSaved">Saved</div>
       </div>
+      <div id="pastNotesSection" style="margin-top:4px;"></div>
       <button class="modal-cta" onclick="closeModal()">I receive this</button>
     </div>
   </div>
@@ -805,10 +826,39 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
     </div>
     <div class="settings-group-label">Data</div>
     <div class="settings-card">
+      
+      <!-- Firebase Sync Row (injected) -->
+      <div class="sync-row" id="syncSettingsRow">
+        <div class="sync-icon">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+        </div>
+        <div class="sync-body">
+          <div class="sync-label"><span class="sync-dot" id="syncDot"></span>Cross-Device Sync</div>
+          <div class="sync-sub" id="syncSubLabel">Sign in to sync between iPhone &amp; iPad</div>
+        </div>
+        <button class="sync-btn" id="syncBtn" onclick="handleSyncBtn()">Sign In</button>
+      </div>
+
       <div class="settings-row" style="cursor:pointer" onclick="manualReset()">
         <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div>
         <div class="settings-row-body"><div class="settings-row-label">Reset Today</div><div class="settings-row-sub">Manually trigger 5 AM reset</div></div>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--l3)"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="settings-row" style="cursor:pointer;align-items:flex-start;flex-direction:column;gap:6px;padding:14px 16px;" onclick="exportAllData()">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div class="settings-row-body"><div class="settings-row-label">Export All Data</div><div class="settings-row-sub">Download a backup of everything</div></div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid var(--sep);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:12px;font-weight:700;color:var(--l2);">Storage Used</div>
+          <div style="font-size:12px;font-weight:700;color:var(--orange);" id="storageLabel">—</div>
+        </div>
+        <div style="height:6px;background:var(--g3);border-radius:3px;overflow:hidden;">
+          <div id="storageBar" style="height:100%;width:0%;background:var(--orange);border-radius:3px;transition:width .4s;"></div>
+        </div>
+        <div style="font-size:10px;font-weight:500;color:var(--l3);margin-top:5px;" id="storageDetail">Calculating…</div>
       </div>
       <div class="settings-row" style="padding:0;overflow:hidden;">
         <button class="danger-btn" onclick="clearAllData()">Clear All Data</button>
@@ -843,9 +893,9 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
       <div class="spirit-section-header" onclick="toggleSpirit('soap')">
         <div class="spirit-section-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
         <div class="spirit-section-title">SOAP Journal</div>
-        <svg class="spirit-chevron" id="chevron-soap" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg class="spirit-chevron open" id="chevron-soap" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="spirit-section-body" id="spirit-soap" style="display:none;">
+      <div class="spirit-section-body" id="spirit-soap">
         <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <div class="soap-badge">S — Scripture</div><div class="soap-badge">O — Observation</div><div class="soap-badge">A — Application</div><div class="soap-badge">P — Prayer</div>
         </div>
@@ -1288,8 +1338,8 @@ function save(){localStorage.setItem(K.TASKS,JSON.stringify(tasks));localStorage
 function saveGratitude(){localStorage.setItem(K.GRAT,JSON.stringify({g1:el('grat1').value,g2:el('grat2').value,g3:el('grat3').value,date:todayStr()}));}
 function loadGratitude(){try{const g=JSON.parse(localStorage.getItem(K.GRAT)||'null');if(g&&g.date===todayStr()){el('grat1').value=g.g1||'';el('grat2').value=g.g2||'';el('grat3').value=g.g3||'';}}catch(e){}}
 let _ns;
-function saveNote(){const notes=JSON.parse(localStorage.getItem(K.NOTES)||'{}');notes['d'+dayIndex()]=el('modalNotes').value;localStorage.setItem(K.NOTES,JSON.stringify(notes));clearTimeout(_ns);_ns=setTimeout(()=>{const s=el('notesSaved');s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1500);},500);}
-function loadNote(){const notes=JSON.parse(localStorage.getItem(K.NOTES)||'{}');el('modalNotes').value=notes['d'+dayIndex()]||'';}
+function saveNote(){const notes=JSON.parse(localStorage.getItem(K.NOTES)||'{}');notes[todayStr()]=el('modalNotes').value;localStorage.setItem(K.NOTES,JSON.stringify(notes));clearTimeout(_ns);_ns=setTimeout(()=>{const s=el('notesSaved');s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1500);},500);}
+function loadNote(){const notes=JSON.parse(localStorage.getItem(K.NOTES)||'{}');el('modalNotes').value=notes[todayStr()]||notes['d'+dayIndex()]||'';}
 function el(id){return document.getElementById(id);}
 function todayStr(){const d=new Date();return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function p(n){return String(n).padStart(2,'0');}
@@ -1331,7 +1381,7 @@ function checkReset(){
 }
 function set5amTimer(){
   const now=new Date(),next=new Date(now);
-  next.setHours(5,0,5,0);
+  next.setHours(5,0,0,0);
   if(now.getHours()>=5)next.setDate(next.getDate()+1);
   setTimeout(()=>{checkReset();renderAll();showToast('New day — fresh start');set5amTimer();},next-now);
 }
@@ -1368,8 +1418,8 @@ function clearWinsBadge(){const b=el('winsBadge');if(b)b.style.display='none';}
 function renderAll(){renderTasks();renderStats();renderProgress();renderHabits();renderConf();renderWins();updateBadge();renderScore();renderStreak();renderLevel();renderMomentum();}
 function updateFlipClock(){const now=new Date();let h=now.getHours();const m=now.getMinutes(),isPM=h>=12;h=h%12||12;const t=el('digTime'),a=el('digAmpm');if(t)t.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;if(a)a.textContent=isPM?'PM':'AM';}
 function updateHeader(){const now=new Date(),h=now.getHours();let g='Good Morning';if(h>=12&&h<17)g='Good Afternoon';else if(h>=17)g='Good Evening';el('headerGreeting').textContent=g;el('headerBigDate').textContent=now.toLocaleDateString('en-US',{weekday:'long'});el('headerFullDate').textContent=now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});const s=loadSettings(),nameEl=document.querySelector('.header-name');if(nameEl){if(s.name&&s.name.trim()){const parts=s.name.trim().split(' '),first=parts[0],last=parts.slice(1).join(' ');nameEl.innerHTML=last?`${esc(first)} <em>${esc(last)}</em>`:`<em>${esc(first)}</em>`;}else nameEl.innerHTML=`<em style="font-style:normal;opacity:0.45;font-size:13px;">Add Name in Settings</em>`;}}
-function showView(v){const views=['todayView','winsView','voiceView','settingsView','spiritualView'];const btns=['navToday','navWins','navVoice','navSettings','navSpiritual'];views.forEach(id=>{const e=el(id);if(e)e.style.display='none';});btns.forEach(id=>{const e=el(id);if(e)e.classList.remove('active');});if(v==='today'){el('todayView').style.display='block';el('navToday').classList.add('active');}else if(v==='wins'){el('winsView').style.display='block';el('navWins').classList.add('active');renderWins();clearWinsBadge();}else if(v==='voice'){el('voiceView').style.display='block';el('navVoice').classList.add('active');renderFolders();}else if(v==='settings'){el('settingsView').style.display='block';el('navSettings').classList.add('active');renderSettingsView();}else if(v==='spiritual'){el('spiritualView').style.display='block';el('navSpiritual').classList.add('active');renderSpiritualPage();}}
-const K_SOAP='sc_soap_v1';const spiritOpen={prayer:true,soap:false,conf:false};
+function showView(v){const views=['todayView','winsView','voiceView','settingsView','spiritualView'];const btns=['navToday','navWins','navVoice','navSettings','navSpiritual'];views.forEach(id=>{const e=el(id);if(e)e.style.display='none';});btns.forEach(id=>{const e=el(id);if(e)e.classList.remove('active');});if(v==='today'){el('todayView').style.display='block';el('navToday').classList.add('active');}else if(v==='wins'){el('winsView').style.display='block';el('navWins').classList.add('active');renderWins();clearWinsBadge();}else if(v==='voice'){el('voiceView').style.display='block';el('navVoice').classList.add('active');renderFolders();}else if(v==='settings'){el('settingsView').style.display='block';el('navSettings').classList.add('active');renderSettingsView();setTimeout(updateStorageMeter,100);}else if(v==='spiritual'){el('spiritualView').style.display='block';el('navSpiritual').classList.add('active');renderSpiritualPage();}}
+const K_SOAP='sc_soap_v1';const spiritOpen={prayer:true,soap:true,conf:false};
 function toggleSpirit(s){spiritOpen[s]=!spiritOpen[s];const b=el('spirit-'+s),c=el('chevron-'+s);if(b)b.style.display=spiritOpen[s]?'block':'none';if(c)c.className='spirit-chevron'+(spiritOpen[s]?' open':'');}
 function renderSpiritualPage(){['prayer','soap','conf'].forEach(s=>{const b=el('spirit-'+s),c=el('chevron-'+s);if(b)b.style.display=spiritOpen[s]?'block':'none';if(c)c.className='spirit-chevron'+(spiritOpen[s]?' open':'');});renderPrayers();renderSoapToday();renderSoapHistory();renderConfessionCards();}
 function loadSoap(){try{return JSON.parse(localStorage.getItem(K_SOAP)||'{}');}catch(e){return{};}}
@@ -1377,7 +1427,7 @@ function saveSoap(){const all=loadSoap(),key=todayStr();all[key]={date:key,s:el(
 let _soapTimer;
 function autoSaveSoap(){clearTimeout(_soapTimer);_soapTimer=setTimeout(()=>{const all=loadSoap(),key=todayStr();all[key]={date:key,s:el('soapS')?el('soapS').value:'',o:el('soapO')?el('soapO').value:'',a:el('soapA')?el('soapA').value:'',p:el('soapP')?el('soapP').value:''};localStorage.setItem(K_SOAP,JSON.stringify(all));},1000);}
 function renderSoapToday(){const sc=getDailyItem(SCRIPTURES),ref=el('soapScriptureRef');if(ref)ref.textContent='— '+sc.ref+': "'+sc.text.substring(0,80)+(sc.text.length>80?'…':'')+'"';const dl=el('soapDateLabel');if(dl)dl.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});const all=loadSoap(),today=all[todayStr()];if(today){if(el('soapS'))el('soapS').value=today.s||'';if(el('soapO'))el('soapO').value=today.o||'';if(el('soapA'))el('soapA').value=today.a||'';if(el('soapP'))el('soapP').value=today.p||'';}}
-function renderSoapHistory(){const container=el('soapHistory');if(!container)return;const all=loadSoap(),keys=Object.keys(all).sort().reverse().filter(k=>k!==todayStr());if(!keys.length){container.innerHTML='';return;}container.innerHTML=`<div class="section-header" style="padding:12px 2px 8px;">Past Entries</div>`+keys.slice(0,30).map(k=>{const e=all[k],preview=(e.s||e.o||e.a||e.p||'').substring(0,80);return`<div class="soap-history-entry" onclick="openSoapEntry('${k}')"><div class="soap-history-date">${prettyDate(k)}</div><div class="soap-history-preview">${esc(preview)}${preview.length>=80?'…':''}</div></div>`;}).join('');}
+function renderSoapHistory(){const container=el('soapHistory');if(!container)return;const all=loadSoap(),keys=Object.keys(all).sort().reverse().filter(k=>k!==todayStr());if(!keys.length){container.innerHTML='<div style="margin-top:8px;padding:14px 0;text-align:center;"><div style="font-size:13px;font-weight:600;color:var(--l3);">No past entries yet</div><div style="font-size:11px;color:var(--l4);margin-top:4px;">Write today\'s SOAP above — it will appear here tomorrow</div></div>';return;}container.innerHTML='<div class="section-header" style="padding:12px 2px 8px;">Past Entries ('+(keys.length)+')</div>'+keys.map(k=>{const e=all[k],preview=(e.s||e.o||e.a||e.p||'').substring(0,80);return`<div class="soap-history-entry" onclick="openSoapEntry('${k}')"><div class="soap-history-date">${prettyDate(k)}</div><div class="soap-history-preview">${esc(preview)}${preview.length>=80?'…':''}</div></div>`;}).join('');}
 function openSoapEntry(key){const all=loadSoap(),e=all[key];if(!e)return;const lines=['SOAP — '+prettyDate(key),'','S:',e.s||'(empty)','','O:',e.o||'(empty)','','A:',e.a||'(empty)','','P:',e.p||'(empty)'].join('\n');if(navigator.share)navigator.share({title:'SOAP Entry',text:lines}).catch(()=>{});else navigator.clipboard.writeText(lines).then(()=>showToast('Copied to clipboard'));}
 const K_CUSTOM_CONF='sc_custom_conf_v1';
 const CONFESSION_TEXTS=[{text:"I am fearfully and wonderfully made — created with purpose and intention.",ref:"Psalm 139:14"},{text:"I am loved unconditionally by God — nothing I do can change that.",ref:"Romans 8:38-39"},{text:"I am more than a conqueror through Christ who strengthens me.",ref:"Romans 8:37"},{text:"I walk in the abundance of God's grace, favor, and blessing today.",ref:"2 Corinthians 9:8"},{text:"I am called, equipped, and anointed for this season of my life.",ref:"1 Peter 2:9"},{text:"I have not been given a spirit of fear, but of power, love, and a sound mind.",ref:"2 Timothy 1:7"},{text:"I am the righteousness of God in Christ Jesus.",ref:"2 Corinthians 5:21"},{text:"I am complete in Him who is the head of all principality and power.",ref:"Colossians 2:10"},{text:"God's plans for me are good — to give me hope and a future.",ref:"Jeremiah 29:11"},{text:"I am chosen, set apart, and deeply loved by God.",ref:"1 Thessalonians 1:4"},{text:"Nothing can separate me from the love of God.",ref:"Romans 8:38"},{text:"I walk in divine health, wholeness, and peace every day.",ref:"Isaiah 53:5"},];
@@ -1387,7 +1437,7 @@ function getFirstName(){const s=loadSettings();if(s.name&&s.name.trim())return s
 function addCustomConfession(){const inp=el('newConfInput'),refInp=el('newConfRef');if(!inp)return;const text=inp.value.trim();if(!text){showToast('Enter a confession');return;}const list=loadCustomConf();list.push({text,ref:refInp?refInp.value.trim():''});saveCustomConf(list);inp.value='';if(refInp)refInp.value='';renderConfessionCards();showToast('Confession added');}
 function deleteCustomConfession(index){const list=loadCustomConf();list.splice(index,1);saveCustomConf(list);renderConfessionCards();}
 function renderConfessionCards(){const container=el('confessionCards');if(!container)return;const custom=loadCustomConf();const allConf=[...CONFESSION_TEXTS,...custom.map((c,i)=>({...c,custom:true,idx:i}))];const cards=allConf.map((c)=>{const delBtn=c.custom?`<button onclick="deleteCustomConfession(${c.idx})" style="background:none;border:none;cursor:pointer;color:var(--l4);padding:0;float:right;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`:'';return`<div class="confession-card">${delBtn}<div class="confession-text-display">${esc(c.text)}</div>${c.ref?`<div style="font-size:11px;font-weight:700;color:var(--orange);opacity:0.75;margin-top:8px;">— ${esc(c.ref)}</div>`:''}</div>`;}).join('');const addForm=`<div style="background:var(--g2);border-radius:var(--r-md);padding:14px 16px;margin-top:4px;"><div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Add Your Own</div><textarea id="newConfInput" placeholder="I am…" rows="2" style="width:100%;background:var(--g1);border:1.5px solid var(--sep2);border-radius:var(--r-sm);padding:10px 12px;font-family:'Manrope',sans-serif;font-size:13px;font-weight:500;color:var(--white);outline:none;resize:none;caret-color:var(--orange);margin-bottom:8px;box-sizing:border-box;"></textarea><input id="newConfRef" placeholder="Scripture reference (optional)" maxlength="60" style="width:100%;background:var(--g1);border:1.5px solid var(--sep2);border-radius:var(--r-sm);padding:9px 12px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:500;color:var(--white);outline:none;caret-color:var(--orange);margin-bottom:10px;box-sizing:border-box;"><button onclick="addCustomConfession()" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:var(--r-sm);padding:11px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif;cursor:pointer;">Add Confession</button></div>`;container.innerHTML=cards+addForm;}
-const K_SETTINGS='sc_settings_v1';
+const K_SETTINGS='sc_settings_v2';
 const ACCENT_COLORS=[{name:'Orange',hex:'#E8571A'},{name:'Blue',hex:'#2563EB'},{name:'Purple',hex:'#7C3AED'},{name:'Green',hex:'#16A34A'},{name:'Red',hex:'#DC2626'},{name:'Teal',hex:'#0D9488'},{name:'Pink',hex:'#DB2777'},{name:'Gold',hex:'#D97706'}];
 function loadSettings(){try{return JSON.parse(localStorage.getItem(K_SETTINGS)||'{}');}catch(e){return{};}}
 function saveSettingsData(s){localStorage.setItem(K_SETTINGS,JSON.stringify(s));}
@@ -1400,7 +1450,7 @@ function deleteHabitFromSettings(index){const habits=getHabits();if(index<0||ind
 function applyHexColor(val){if(!val)return;const hex=val.startsWith('#')?val:'#'+val;if(!/^#[0-9A-Fa-f]{6}$/.test(hex)){const prev=el('hexPreview');if(prev)prev.style.background='var(--g3)';return;}const prev=el('hexPreview');if(prev)prev.style.background=hex;setAccentColor(hex);}
 function setAccentColor(hex){const s=loadSettings();s.accent=hex;saveSettingsData(s);applySettingsToDOM(s);renderSettingsView();showToast('Color updated');}
 function toggleLightMode(){const s=loadSettings();s.lightMode=!s.lightMode;saveSettingsData(s);applySettingsToDOM(s);renderSettingsView();showToast(s.lightMode?'Light mode on':'Dark mode on');}
-function initSettings(){const s=loadSettings();if(s.lightMode===undefined){s.lightMode=true;saveSettingsData(s);}applySettingsToDOM(s);}
+function initSettings(){const s=loadSettings();if(s.lightMode===undefined){s.lightMode=false;saveSettingsData(s);}applySettingsToDOM(s);}
 function manualReset(){const ok=typeof confirm!=='undefined'?confirm("Reset today? This will archive completed tasks and clear today's data."):true;if(!ok)return;markResetDone();checkReset();renderAll();renderPrayers();showToast('Day reset');}
 function clearAllData(){const ok1=typeof confirm!=='undefined'?confirm('Clear ALL data? This cannot be undone.'):false;if(!ok1)return;const ok2=typeof confirm!=='undefined'?confirm('Are you sure?'):false;if(!ok2)return;const sb=localStorage.getItem(K_SETTINGS);localStorage.clear();if(sb)localStorage.setItem(K_SETTINGS,sb);tasks=[];winsHistory={};confState=[false,false,false,false,false];habitState=new Array(getHabits().length).fill(false);streak=0;bestStreak=0;totalWins=0;scriptureOpened=false;renderAll();renderPrayers();showToast('All data cleared');}
 const VOICE_KEY='sc_thoughts_v1';
@@ -1416,10 +1466,33 @@ function deleteThought(id){let t=loadThoughts();t=t.filter(x=>x.id!==id);saveTho
 function shareThought(id){const thoughts=loadThoughts(),t=thoughts.find(x=>x.id===id);if(!t)return;const text=`${t.text}\n\n— Captured ${new Date(t.ts).toLocaleString()}`;if(navigator.share)navigator.share({title:'My Thought',text}).catch(()=>{});else navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard'));}
 let recognition=null,isRecording=false,micFinalText='';
 function playMicSound(type){try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);if(type==='start'){osc.frequency.setValueAtTime(880,ctx.currentTime);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);}else{osc.frequency.setValueAtTime(440,ctx.currentTime);osc.frequency.setValueAtTime(330,ctx.currentTime+0.1);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);}osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);}catch(e){}}
-function toggleRecording(){if(isRecording){stopRecording();return;}startRecording();}
-function startRecording(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){el('micStatus').textContent='Not supported — use Safari on iPhone';return;}micFinalText='';el('micTranscript').textContent='';el('micStatus').textContent='Listening…';el('micStatus').classList.add('active');el('micBtn').classList.add('recording');isRecording=true;playMicSound('start');function runSession(){if(!isRecording)return;recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-US';recognition.maxAlternatives=1;recognition.onresult=(e)=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)micFinalText+=e.results[i][0].transcript+' ';else interim=e.results[i][0].transcript;}el('micTranscript').textContent=(micFinalText+interim).trim();};recognition.onerror=(ev)=>{if(ev.error==='not-allowed'){isRecording=false;el('micBtn').classList.remove('recording');el('micStatus').classList.remove('active');el('micStatus').textContent='Microphone access denied';el('micTranscript').textContent='Go to Settings → Safari → Microphone → Allow';return;}if(ev.error==='no-speech'&&isRecording){setTimeout(runSession,100);return;}if(isRecording)setTimeout(runSession,200);};recognition.onend=()=>{if(isRecording)setTimeout(runSession,100);};try{recognition.start();}catch(e){setTimeout(runSession,300);}}runSession();}
-function stopRecording(){isRecording=false;if(recognition){recognition.onend=null;recognition.onerror=null;try{recognition.stop();}catch(e){}recognition=null;}playMicSound('stop');el('micStatus').textContent='Tap to capture a thought';el('micStatus').classList.remove('active');el('micBtn').classList.remove('recording');const text=(micFinalText||el('micTranscript').textContent||'').trim();if(text.length>2){const cat=categorizeWithCustom(text),thought={id:Date.now().toString(),text,ts:new Date().toISOString(),category:cat.id,categoryName:cat.name};const thoughts=loadThoughts();thoughts.push(thought);saveThoughts(thoughts);el('micTranscript').textContent='';micFinalText='';showToast('Thought saved to '+cat.name);renderFolders();}else{el('micTranscript').textContent='';micFinalText='';}}
-function openModal(){const sc=getDailyItem(SCRIPTURES);el('modalVerseText').textContent=sc.text;el('modalVerseRef').textContent='— '+sc.ref;el('modalIdeas').innerHTML=sc.ideas.map((idea,i)=>`<div class="modal-idea"><div class="modal-idea-num">${i+1}</div><div class="modal-idea-text">${esc(idea)}</div></div>`).join('');loadNote();el('modalOverlay').classList.add('open');if(!scriptureOpened){scriptureOpened=true;localStorage.setItem(K.SCR_OPEN,todayStr());renderScore();}}
+function toggleRecording(){
+  if(isRecording){stopRecording();return;}
+  // Check/request mic permission once before starting
+  if(!window._micPermGranted&&localStorage.getItem('sc_mic_ok')==='1')window._micPermGranted=true;if(!window._micPermGranted&&localStorage.getItem('sc_mic_ok')==='1')window._micPermGranted=true;if(window._micPermGranted){startRecording();return;}
+  if(navigator.permissions){
+    navigator.permissions.query({name:'microphone'}).then(s=>{
+      if(s.state==='granted'){window._micPermGranted=true;localStorage.setItem('sc_mic_ok','1');startRecording();}
+      else if(s.state==='denied'){el('micStatus').textContent='Microphone access denied — check Settings';return;}
+      else{ requestMicAndRecord(); }
+    }).catch(()=>requestMicAndRecord());
+  } else { requestMicAndRecord(); }
+}
+function requestMicAndRecord(){
+  if(!navigator.mediaDevices){startRecording();return;}
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(s=>{s.getTracks().forEach(t=>t.stop());window._micPermGranted=true;localStorage.setItem('sc_mic_ok','1');startRecording();})
+    .catch(()=>{el('micStatus').textContent='Microphone access denied — check Settings';});
+}
+function startRecording(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){el('micStatus').textContent='Not supported — use Safari on iPhone';return;}micFinalText='';el('micTranscript').textContent='';el('micStatus').textContent='Listening…';el('micStatus').classList.add('active');el('micBtn').classList.add('recording');isRecording=true;playMicSound('start');function runSession(){if(!isRecording)return;recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-US';recognition.maxAlternatives=1;recognition.onresult=(e)=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)micFinalText+=e.results[i][0].transcript+' ';else interim=e.results[i][0].transcript;}const _tEl=el('micTranscript');_tEl.innerHTML=(micFinalText.trim()?esc(micFinalText.trim())+' ':'')+( interim?'<span style="opacity:0.4;font-style:italic">'+esc(interim)+'</span>':'');};recognition.onerror=(ev)=>{if(ev.error==='not-allowed'){isRecording=false;window._micPermGranted=false;localStorage.removeItem('sc_mic_ok');el('micBtn').classList.remove('recording');el('micStatus').classList.remove('active');el('micStatus').textContent='Microphone access denied';el('micTranscript').textContent='Go to Settings → Safari → Microphone → Allow';return;}if(ev.error==='no-speech'&&isRecording){setTimeout(runSession,100);return;}if(isRecording)setTimeout(runSession,200);};recognition.onend=()=>{
+        // Restart using the same instance to avoid repeated permission prompts
+        if(isRecording&&!recognition._stopping){
+          try{ recognition.start(); }
+          catch(e){ if(isRecording) setTimeout(runSession,300); }
+        }
+      };try{recognition.start();}catch(e){setTimeout(runSession,300);}}runSession();}
+function stopRecording(){isRecording=false;if(recognition){recognition.onend=null;recognition.onerror=null;try{recognition.stop();}catch(e){}recognition=null;}playMicSound('stop');el('micStatus').textContent='Tap to capture a thought';el('micStatus').classList.remove('active');el('micBtn').classList.remove('recording');const text=(micFinalText||el('micTranscript').textContent||'').replace(/<[^>]*>/g,'').trim();if(text.length>2){const cat=categorizeWithCustom(text),thought={id:Date.now().toString(),text,ts:new Date().toISOString(),category:cat.id,categoryName:cat.name};const thoughts=loadThoughts();thoughts.push(thought);saveThoughts(thoughts);el('micTranscript').textContent='';micFinalText='';showToast('Thought saved to '+cat.name);renderFolders();}else{el('micTranscript').textContent='';micFinalText='';}}
+function _dayIdxToDate(k){const n=parseInt(k.slice(1));return'Entry #'+n;}function renderPastNotes(){const container=el('pastNotesSection');if(!container)return;const notes=JSON.parse(localStorage.getItem(K.NOTES)||'{}');const todayKey=todayStr(),todayOld='d'+Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);const allKeys=Object.keys(notes).filter(k=>k!==todayKey&&k!==todayOld&&notes[k]&&notes[k].trim());const newKeys=allKeys.filter(k=>k.match(/^\d{4}-\d{2}-\d{2}$/)).sort().reverse();const oldKeys=allKeys.filter(k=>k.match(/^d\d+$/)).sort((a,b)=>parseInt(b.slice(1))-parseInt(a.slice(1)));const keys=[...newKeys,...oldKeys];if(!keys.length){container.innerHTML='<div style="border-top:1px solid var(--sep);margin-top:14px;padding-top:14px;"><div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Past Notes</div><div style="font-size:13px;color:var(--l3);font-style:italic;">Notes you write will be saved here for future reference.</div></div>';return;}container.innerHTML='<div style="border-top:1px solid var(--sep);margin-top:14px;padding-top:14px;"><div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Past Notes ('+keys.length+')</div>'+keys.map(k=>{const txt=notes[k];if(!txt||!txt.trim())return'';const label=k.match(/^\d{4}-\d{2}-\d{2}$/)?prettyDate(k):_dayIdxToDate(k);const preview=txt.substring(0,120);return`<div style="background:var(--g2);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;" onclick="event.stopPropagation();const f=this.querySelector('.pn-full');f.style.display=f.style.display==='none'?'block':'none'"><div style="font-size:10px;font-weight:800;color:var(--orange);margin-bottom:5px;">${label}</div><div style="font-size:13px;font-weight:500;color:var(--l2);line-height:1.5;">${esc(preview)}${txt.length>120?'…':''}</div><div class="pn-full" style="display:none;font-size:13px;font-weight:500;color:var(--l1);line-height:1.65;margin-top:10px;white-space:pre-wrap;border-top:1px solid var(--sep);padding-top:10px;">${esc(txt)}</div></div>`;}).join('')+'</div>';}function openModal(){const sc=getDailyItem(SCRIPTURES);el('modalVerseText').textContent=sc.text;el('modalVerseRef').textContent='— '+sc.ref;el('modalIdeas').innerHTML=sc.ideas.map((idea,i)=>`<div class="modal-idea"><div class="modal-idea-num">${i+1}</div><div class="modal-idea-text">${esc(idea)}</div></div>`).join('');loadNote();renderPastNotes();el('modalOverlay').classList.add('open');if(!scriptureOpened){scriptureOpened=true;localStorage.setItem(K.SCR_OPEN,todayStr());renderScore();}}
 function closeModal(e){if(!e||e.target===el('modalOverlay'))el('modalOverlay').classList.remove('open');}
 let _tt;
 function showToast(msg){el('toastMsg').textContent=msg;const t=el('toast');t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400);}
@@ -1440,7 +1513,7 @@ function toggleAlarmSound(){const current=getAlarmSound();localStorage.setItem(K
 function initAlarmToggle(){const toggle=el('alarmSoundToggle');if(toggle)toggle.className='toggle'+(getAlarmSound()?' on':'');}
 function playAlarmChime(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[[0,660],[0.18,880],[0.36,1100]].forEach(([t,freq])=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0,ctx.currentTime+t);gain.gain.linearRampToValueAtTime(0.18,ctx.currentTime+t+0.05);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.5);osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.55);});}catch(e){}}
 function setRecurType(type){recurType=type;el('recurTypeTask').className='type-pill'+(type==='task'?' active':'');el('recurTypeHabit').className='type-pill'+(type==='habit'?' active':'');}
-function addRecurring(){const name=el('recurNameInput')?el('recurNameInput').value.trim():'';if(!name){showToast('Enter a task name');return;}const selectedDays=[];document.querySelectorAll('.day-pill.selected').forEach(b=>{selectedDays.push(parseInt(b.dataset.day));});if(!selectedDays.length){showToast('Select at least one day');return;}const notifyTime=el('recurNotifyTime')?el('recurNotifyTime').value:'08:00';const item={id:Date.now().toString(),name,days:selectedDays,type:recurType,notifyTime};const list=loadRecurring();list.push(item);saveRecurring(list);scheduleRecurringNotifications(item);el('recurNameInput').value='';document.querySelectorAll('.day-pill.selected').forEach(b=>b.classList.remove('selected'));if(el('recurNotifyTime'))el('recurNotifyTime').value='08:00';setRecurType('task');renderRecurringList();injectRecurring();renderAll();renderHeaderNextEvent();showToast('"'+name+'" scheduled');}
+function addRecurring(){try{const name=el('recurNameInput')?el('recurNameInput').value.trim():'';if(!name){showToast('Enter a task name');return;}const selectedDays=[];document.querySelectorAll('.day-pill.selected').forEach(b=>{selectedDays.push(parseInt(b.dataset.day));});if(!selectedDays.length){showToast('Select at least one day');return;}const notifyTime=(el('recurNotifyTime')&&el('recurNotifyTime').value)||'08:00';const item={id:Date.now().toString(),name,days:selectedDays,type:recurType,notifyTime};const list=loadRecurring();list.push(item);saveRecurring(list);scheduleRecurringNotifications(item);el('recurNameInput').value='';document.querySelectorAll('.day-pill.selected').forEach(b=>b.classList.remove('selected'));if(el('recurNotifyTime'))el('recurNotifyTime').value='08:00';setRecurType('task');renderRecurringList();injectRecurring();renderAll();renderHeaderNextEvent();showToast('"'+name+'" scheduled');}catch(err){showToast('Error saving — try again');console.error('addRecurring:',err);}}
 function deleteRecurring(id){saveRecurring(loadRecurring().filter(r=>r.id!==id));tasks=tasks.filter(t=>t.recurId!==id);const habits=getHabits().filter(h=>h.recurId!==id);saveHabitsList(habits);habitState=habitState.slice(0,habits.length);save();renderRecurringList();renderAll();showToast('Recurring item removed');}
 function renderRecurringList(){const container=el('recurringList');if(!container)return;const list=loadRecurring();if(!list.length){container.innerHTML='<div style="font-size:12px;color:var(--l3);padding:8px 0;font-style:italic;">No recurring items yet.</div>';return;}container.innerHTML=list.map(r=>{const dayLabels=r.days.sort((a,b)=>a-b).map(d=>DAY_SHORT[d]).join(', '),timeLabel=r.notifyTime?' · 🔔 '+formatTime12(r.notifyTime):'';return`<div class="recur-item"><div class="recur-item-info"><div class="recur-item-name">${esc(r.name)}</div><div class="recur-item-meta">${dayLabels} · ${r.type==='task'?'My Tasks':'Daily Habits'}${timeLabel}</div></div><button class="recur-item-del" onclick="deleteRecurring('${r.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`;}).join('');}
 function formatTime12(time24){if(!time24)return'';const[h,m]=time24.split(':').map(Number),ampm=h>=12?'PM':'AM',h12=h%12||12;return h12+':'+String(m).padStart(2,'0')+' '+ampm;}
@@ -1498,15 +1571,15 @@ function scheduleSWNotif(id, title, body, fireAt) {
 function schedule5amSW() {
   if(!swReg || !swReg.active) return;
   const now = new Date(), next = new Date(now);
-  next.setHours(5,0,5,0);
+  next.setHours(5,0,0,0);
   if(now.getHours() >= 5) next.setDate(next.getDate()+1);
   swReg.active.postMessage({ type:'SCHEDULE_5AM', payload:{ fireAt: next.getTime() } });
 }
 async function requestNotificationPermission(){if(!('Notification'in window)){showToast('Notifications not supported');updateNotifStatus();return;}if(Notification.permission==='granted'){showToast('Notifications already enabled');updateNotifStatus();scheduleAllNotifications();return;}const result=await Notification.requestPermission();if(result==='granted'){await registerServiceWorker();scheduleAllNotifications();showToast('Notifications enabled!');}else{showToast('Blocked — check Safari Settings → Notifications');}updateNotifStatus();}
 function updateNotifStatus(){const statusEl=el('notifStatus'),btnEl=el('notifPermBtn');if(!statusEl)return;if(!('Notification'in window)){statusEl.textContent='Not supported in this browser';return;}if(Notification.permission==='granted'){statusEl.textContent='✓ Notifications are enabled';statusEl.style.color='var(--orange)';if(btnEl){btnEl.textContent='Notifications Enabled';btnEl.style.opacity='0.6';}}else if(Notification.permission==='denied'){statusEl.textContent='Blocked — go to Settings → Safari → Notifications';statusEl.style.color='#ef4444';}else{statusEl.textContent='Tap above to enable';}}
-function scheduleDeadlineNotification(task){if(!task.deadline||Notification.permission!=='granted')return;const fireAt=new Date(task.deadline).getTime();if(fireAt<=Date.now())return;setTimeout(()=>fireNotification('Task Deadline ⏰',task.text),fireAt-Date.now());}
-function scheduleRecurringNotifications(item){if(Notification.permission!=='granted'||!item.notifyTime)return;const[h,m]=item.notifyTime.split(':').map(Number),now=new Date();for(let week=0;week<4;week++){item.days.forEach(day=>{const date=new Date();const daysUntil=(day-date.getDay()+7)%7+week*7;date.setDate(date.getDate()+daysUntil);date.setHours(h,m,0,0);if(date.getTime()>now.getTime()){const delay=date.getTime()-now.getTime();setTimeout(()=>fireNotification('MyDay Reminder 🔔',item.name),delay);}});}}
-function scheduleAllNotifications(){if(Notification.permission!=='granted')return;loadRecurring().forEach(scheduleRecurringNotifications);}
+function scheduleDeadlineNotification(task){if(!task.deadline||typeof Notification==='undefined'||Notification.permission!=='granted')return;const fireAt=new Date(task.deadline).getTime();if(fireAt<=Date.now())return;setTimeout(()=>fireNotification('Task Deadline ⏰',task.text),fireAt-Date.now());}
+function scheduleRecurringNotifications(item){if(typeof Notification==='undefined'||Notification.permission!=='granted'||!item.notifyTime)return;const[h,m]=item.notifyTime.split(':').map(Number),now=new Date();for(let week=0;week<4;week++){item.days.forEach(day=>{const date=new Date();const daysUntil=(day-date.getDay()+7)%7+week*7;date.setDate(date.getDate()+daysUntil);date.setHours(h,m,0,0);if(date.getTime()>now.getTime()){const delay=date.getTime()-now.getTime();setTimeout(()=>fireNotification('MyDay Reminder 🔔',item.name),delay);}});}}
+function scheduleAllNotifications(){if(typeof Notification==='undefined'||Notification.permission!=='granted')return;loadRecurring().forEach(scheduleRecurringNotifications);}
 function fireNotification(title,body){
   if(Notification.permission!=='granted')return;
   try{
@@ -1554,7 +1627,7 @@ function openCalendar(){
   calSelectedDate=todayStr();
   // Restore token from session, or silently re-auth if connected
   if(!gcalAccessToken){
-    const stored=sessionStorage.getItem('gcalToken');
+    const stored=localStorage.getItem('gcalToken');
     if(stored){gcalAccessToken=stored;}
     else{
       const cfg=loadGcalCfg();
@@ -1796,7 +1869,7 @@ function initTokenClient(clientId){
       callback:async(resp)=>{
         if(resp.error){showToast('Google auth failed: '+resp.error);renderCalConnectCards();return;}
         gcalAccessToken=resp.access_token;
-        sessionStorage.setItem('gcalToken',resp.access_token);
+        localStorage.setItem('gcalToken',resp.access_token);
         await syncGcalEvents(resp.access_token);
       }
     });
@@ -1899,7 +1972,7 @@ function openAddEvent(){
   calPickedColor=EV_COLORS[0];
   renderColorPicker();
   // Restore token from session
-  if(!gcalAccessToken){const t=sessionStorage.getItem('gcalToken');if(t)gcalAccessToken=t;}
+  if(!gcalAccessToken){const t=localStorage.getItem('gcalToken');if(t)gcalAccessToken=t;}
   const cfg=loadGcalCfg();
   // If connected but no token, silently re-auth before opening
   if(cfg.connected&&cfg.clientId&&!gcalAccessToken){
@@ -1933,14 +2006,20 @@ function silentGcalAuth(clientId){
 }
 
 function doSilentAuth(clientId){
+  // Timeout: if silent auth takes >20s, fail gracefully instead of hanging
+  const _silentTimeout=setTimeout(()=>{
+    gcalAccessToken=null;
+    showToast('Could not reconnect Google Calendar — tap to sign in again');
+  },20000);
   try{
     const tc=google.accounts.oauth2.initTokenClient({
       client_id:clientId,
       scope:GCAL_SCOPE+' email profile',
       callback:(resp)=>{
+        clearTimeout(_silentTimeout);
         if(resp.error||!resp.access_token)return;
         gcalAccessToken=resp.access_token;
-        sessionStorage.setItem('gcalToken',resp.access_token);
+        localStorage.setItem('gcalToken',resp.access_token);
         // Update the badge now that we have a token
         const src=el('calAddSource');
         if(src){src.textContent='→ Google Calendar';src.style.background='rgba(37,99,235,0.15)';src.style.color='#2563EB';}
@@ -1970,7 +2049,7 @@ function updateGcalLink(){
   const title=el('calEvTitle')?el('calEvTitle').value.trim():'';
   const date=el('calEvDate')?el('calEvDate').value:'';
   const cfg=loadGcalCfg();
-  const _tok=gcalAccessToken||sessionStorage.getItem('gcalToken');
+  const _tok=gcalAccessToken||localStorage.getItem('gcalToken');
   if(cfg.connected&&_tok){
     linkDiv.innerHTML=`<span style="color:#2563EB;font-size:11px;font-weight:700;">✓ Will save directly to Google Calendar</span>`;
     return;
@@ -2013,7 +2092,7 @@ async function saveCalEvent(){
   renderHeaderNextEvent();
   // Try to push to Google
   const cfg=loadGcalCfg();
-  if(!gcalAccessToken){const t=sessionStorage.getItem('gcalToken');if(t)gcalAccessToken=t;}
+  if(!gcalAccessToken){const t=localStorage.getItem('gcalToken');if(t)gcalAccessToken=t;}
   if(cfg.connected&&gcalAccessToken){
     el('calSyncStatus').textContent='Saving to Google…';
     const ok=await createGcalEvent(ev);
@@ -2036,8 +2115,11 @@ function parseIcsFile(file){
   r.onload=(e)=>{
     try{
       const evs=parseIcs(e.target.result);
+      // Keep non-ICS events + deduplicate incoming ICS by title+start
       const existing=loadCalEvents().filter(ev=>!ev.fromIcs);
-      saveCalEvents([...existing,...evs]);
+      const seen=new Set(existing.map(ev=>ev.title+'|'+ev.start));
+      const deduped=evs.filter(ev=>!seen.has(ev.title+'|'+ev.start));
+      saveCalEvents([...existing,...deduped]);
       renderMonthGrid();
       renderCalConnectCards();
       showToast(`Imported ${evs.length} events from ${file.name}`);
@@ -2073,14 +2155,165 @@ function init(){
   load();updateStreak();checkReset();updateHeader();updateFlipClock();
   setInterval(updateFlipClock,1000);
   renderDailyContent();loadGratitude();renderAll();set5amTimer();
-  renderPrayers();checkIntentionPopup();initSettings();injectRecurring();renderAll();
+  renderPrayers();checkIntentionPopup();initSettings();injectRecurring();renderAll();setTimeout(()=>{const _fs=loadSettings();if(!_fs.name||!_fs.name.trim()){showView('settings');showToast('Welcome! Add your name at the top of Settings.');}},600);setTimeout(()=>{const _fs=loadSettings();if(!_fs.name||!_fs.name.trim()){showView('settings');showToast('Welcome! Add your name at the top of Settings.');}},600);
   if(typeof Notification!=='undefined'&&Notification.permission==='granted'){registerServiceWorker().then(()=>{ scheduleAllNotifications(); schedule5amSW(); });}
-  updateNotifStatus();
+  updateNotifStatus();autoPruneData();
   el('taskInput').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
   el('prayerInput').addEventListener('keydown',e=>{if(e.key==='Enter')addPrayer();});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkReset();updateHeader();renderAll();scheduleAllNotifications();}});
 }
 init();
+
+/* ══ STORAGE MANAGEMENT ══ */
+function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),v=localStorage.getItem(k);t+=(k.length+v.length)*2;}return t;}
+function updateStorageMeter(){const used=getStorageBytes(),MAX=5*1024*1024,pct=Math.min(100,(used/MAX)*100);const usedKB=(used/1024).toFixed(0),label=el('storageLabel'),bar=el('storageBar'),detail=el('storageDetail');if(!label)return;label.textContent=usedKB+'KB / 5MB';bar.style.width=pct+'%';bar.style.background=pct>75?'#ef4444':pct>50?'#f59e0b':'var(--orange)';detail.textContent='~'+pct.toFixed(1)+'% used · Auto-cleanup runs on app open';if(pct>80)label.style.color='#ef4444';else if(pct>60)label.style.color='#f59e0b';else label.style.color='var(--orange)';}
+function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPhone v2',tasks:JSON.parse(localStorage.getItem(K.TASKS)||'[]'),winsHistory:JSON.parse(localStorage.getItem(K.WINS)||'{}'),soap:JSON.parse(localStorage.getItem(K_SOAP)||'{}'),thoughts:JSON.parse(localStorage.getItem(VOICE_KEY)||'[]'),prayers:JSON.parse(localStorage.getItem(K_PRAYERS)||'[]'),notes:JSON.parse(localStorage.getItem(K.NOTES)||'{}'),gratitude:JSON.parse(localStorage.getItem(K.GRAT)||'null'),recurring:JSON.parse(localStorage.getItem(K_RECURRING)||'[]'),calendarEvents:JSON.parse(localStorage.getItem(K_CAL)||'[]'),settings:JSON.parse(localStorage.getItem(K_SETTINGS)||'{}'),streak:JSON.parse(localStorage.getItem(K.STREAK)||'{}')};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
+function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=JSON.parse(localStorage.getItem(K.TASKS)||'[]'),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const cutoff90date=new Date(now-(90*86400*1000)).toISOString().slice(0,10),evts=JSON.parse(localStorage.getItem(K_CAL)||'[]'),prunedEvts=evts.filter(e=>!e.date||e.date>=cutoff90date);if(prunedEvts.length<evts.length)localStorage.setItem(K_CAL,JSON.stringify(prunedEvts));const thoughts=JSON.parse(localStorage.getItem(VOICE_KEY)||'[]');if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
+
+/* ══════════════════════════════════════════════
+   FIREBASE CROSS-DEVICE SYNC
+   Replace the placeholder values below with your
+   Firebase project config after setup.
+   ══════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAY1Mrk_fCp7SbGg-OOldhNqFYo9z_TPcE",
+  authDomain:        "my-day-app-61ba1.firebaseapp.com",
+  projectId:         "my-day-app-61ba1",
+  storageBucket:     "my-day-app-61ba1.firebasestorage.app",
+  messagingSenderId: "52189186583",
+  appId:             "1:52189186583:web:23bb7c30a0ce8f489eaa52",
+  measurementId:     "G-71YE595NQ2"
+};
+
+const SYNC_KEYS = ['sc_alarm_sound_v1', 'sc_cal_v2', 'sc_conf_v4', 'sc_custom_cats_v1', 'sc_custom_conf_v1', 'sc_gcal_cfg_v2', 'sc_grat_v4', 'sc_habit_v4', 'sc_habits_list_v1', 'sc_intention_v1', 'sc_notes_v4', 'sc_prayers_v1', 'sc_recur_done_v1', 'sc_recurring_v1', 'sc_reset_v4', 'sc_scropen_v4', 'sc_settings_v2', 'sc_soap_v1', 'sc_streak_v4', 'sc_tasks_v4', 'sc_thoughts_v1', 'sc_total_v4', 'sc_wins_v4'];
+
+let fbApp=null, fbAuth=null, fbDb=null, fbUser=null, syncPending=false;
+
+function initFirebase(){
+  try{
+    if(!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.startsWith('REPLACE'))return;
+    fbApp  = firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb   = firebase.firestore();
+    // Patch localStorage.setItem to auto-sync
+    if(localStorage._syncPatched)return;
+    localStorage._syncPatched=true;
+    const _orig = localStorage.setItem.bind(localStorage);
+    localStorage.setItem.__original = _orig;
+    // Debounce helper — waits 1.5s of inactivity before pushing to Firestore
+    const _pushDebounceTimers={};
+    function debouncedPush(key,val){
+      clearTimeout(_pushDebounceTimers[key]);
+      _pushDebounceTimers[key]=setTimeout(()=>pushKeyToCloud(key,val),1500);
+    }
+    localStorage.setItem = function(key,val){
+      _orig(key,val);
+      if(fbUser && SYNC_KEYS.includes(key)) debouncedPush(key,val);
+    };
+    // Handle redirect sign-in result (iOS Safari)
+    fbAuth.getRedirectResult().then(result=>{
+      if(result&&result.user){ localStorage.removeItem('sc_sync_pending'); }
+    }).catch(()=>{});
+    fbAuth.onAuthStateChanged(async user=>{
+      fbUser=user;
+      if(user){
+        setSyncUI(true, user.displayName||user.email);
+        await pullFromCloud();
+      } else {
+        setSyncUI(false);
+      }
+    });
+  }catch(e){ console.warn('Firebase init failed:',e); }
+}
+
+async function pushKeyToCloud(key,val){
+  if(!fbUser||!fbDb)return;
+  try{
+    setSyncDot('syncing');
+    await fbDb.collection('users').doc(fbUser.uid)
+      .collection('sync').doc('appData')
+      .set({[key]:val, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    setSyncDot('active');
+  }catch(e){ setSyncDot(''); }
+}
+
+async function pullFromCloud(){
+  if(!fbUser||!fbDb)return;
+  try{
+    setSyncDot('syncing');
+    const doc = await fbDb.collection('users').doc(fbUser.uid)
+      .collection('sync').doc('appData').get();
+    if(doc.exists){
+      const data=doc.data();
+      SYNC_KEYS.forEach(k=>{ if(data[k]!==undefined) localStorage.setItem.__original?localStorage.setItem.__original(k,data[k]):Object.getPrototypeOf(localStorage).setItem.call(localStorage,k,data[k]); });
+      // Reload app data without refreshing page
+      if(typeof renderAll==='function') setTimeout(renderAll,100);
+      if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
+      showToast('✓ Synced from cloud');
+    }
+    setSyncDot('active');
+  }catch(e){ setSyncDot(''); showToast('Sync read failed'); }
+}
+
+async function pushAllToCloud(){
+  if(!fbUser||!fbDb)return;
+  const payload={_ts: firebase.firestore.FieldValue.serverTimestamp()};
+  SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) payload[k]=v; });
+  try{
+    setSyncDot('syncing');
+    await fbDb.collection('users').doc(fbUser.uid)
+      .collection('sync').doc('appData').set(payload,{merge:true});
+    setSyncDot('active');
+    showToast('✓ Data backed up to cloud');
+  }catch(e){ setSyncDot(''); showToast('Sync write failed'); }
+}
+
+function handleSyncBtn(){
+  if(fbUser){ signOutSync(); } else { signInSync(); }
+}
+
+function signInSync(){
+  if(!fbAuth){ showToast('Firebase not configured yet'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  // iOS Safari blocks popups — use redirect instead
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if(isIOS){
+    localStorage.setItem('sc_sync_pending','1');
+    fbAuth.signInWithRedirect(provider);
+  } else {
+    fbAuth.signInWithPopup(provider).catch(e=>showToast('Sign in cancelled'));
+  }
+}
+
+function signOutSync(){
+  if(!fbAuth)return;
+  fbAuth.signOut().then(()=>{ setSyncUI(false); showToast('Signed out of sync'); });
+}
+
+function setSyncUI(on, name=''){
+  const btn=document.getElementById('syncBtn');
+  const sub=document.getElementById('syncSubLabel');
+  if(!btn||!sub)return;
+  if(on){
+    btn.textContent='Sign Out'; btn.className='sync-btn connected';
+    sub.textContent=name ? 'Signed in as '+name : 'Synced across your devices';
+    setSyncDot('active');
+  } else {
+    btn.textContent='Sign In'; btn.className='sync-btn';
+    sub.textContent='Sign in to sync between iPhone & iPad';
+    setSyncDot('');
+  }
+}
+
+function setSyncDot(state){
+  const dot=document.getElementById('syncDot');
+  if(!dot)return;
+  dot.className='sync-dot'+(state?' '+state:'');
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', initFirebase);
+
 </script>
 
 <!-- ══ CALENDAR MAIN OVERLAY (Month + Connections) ══ -->
