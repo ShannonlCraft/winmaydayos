@@ -837,6 +837,11 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
         </div>
         <button class="sync-btn" id="syncBtn" onclick="handleSyncBtn()">Sign In</button>
       </div>
+      <div class="settings-row" id="syncNowRow" style="display:none;cursor:pointer" onclick="pushAllToCloud().then(()=>pullFromCloud()).catch(()=>{})">
+        <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg></div>
+        <div class="settings-row-body"><div class="settings-row-label">Sync Now</div><div class="settings-row-sub">Push your data to cloud and pull latest</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--l3)"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
 
       <div class="settings-row" style="cursor:pointer" onclick="manualReset()">
         <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div>
@@ -1580,6 +1585,8 @@ function fireNotification(title,body){
 const K_CAL        = 'sc_cal_v2';
 const K_GCAL_CFG   = 'sc_gcal_cfg_v2';
 const K_GCAL_TOKEN = 'sc_gcal_token_v2';
+// Migrate old 'gcalToken' key to versioned constant
+(function(){try{const oldToken=localStorage.getItem('gcalToken');if(oldToken){localStorage.setItem(K_GCAL_TOKEN,oldToken);localStorage.removeItem('gcalToken');}}catch(e){}})();
 
 const EV_COLORS = ['#E8571A','#2563EB','#16A34A','#7C3AED','#DC2626','#0D9488','#DB2777','#D97706'];
 const MONTHS_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2138,12 +2145,13 @@ function init(){
   updateNotifStatus();autoPruneData();
   const _ti=el('taskInput');if(_ti)_ti.addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
   const _pi=el('prayerInput');if(_pi)_pi.addEventListener('keydown',e=>{if(e.key==='Enter')addPrayer();});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkReset();updateHeader();renderAll();}});
+  // Note: visibilitychange for sync (flush on hide, pull on show) is handled
+  // by the module-level listener below with the _visibilityListenerAdded guard.
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 
 /* ══ STORAGE MANAGEMENT ══ */
-function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),v=localStorage.getItem(k);t+=(k.length+v.length)*2;}return t;}
+function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v===null)continue;t+=(k.length+v.length)*2;}return t;}
 function updateStorageMeter(){const used=getStorageBytes(),MAX=5*1024*1024,pct=Math.min(100,(used/MAX)*100);const usedKB=(used/1024).toFixed(0),label=el('storageLabel'),bar=el('storageBar'),detail=el('storageDetail');if(!label)return;label.textContent=usedKB+'KB / 5MB';bar.style.width=pct+'%';bar.style.background=pct>75?'#ef4444':pct>50?'#f59e0b':'var(--orange)';detail.textContent='~'+pct.toFixed(1)+'% used · Auto-cleanup runs on app open';if(pct>80)label.style.color='#ef4444';else if(pct>60)label.style.color='#f59e0b';else label.style.color='var(--orange)';}
 function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPad v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),calendarEvents:safeJsonParse(localStorage.getItem(K_CAL),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
 function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=safeJsonParse(localStorage.getItem(K.TASKS),[]),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const cutoff90date=new Date(now-(90*86400*1000)).toISOString().slice(0,10),evts=safeJsonParse(localStorage.getItem(K_CAL),[]),prunedEvts=evts.filter(e=>!e.date||e.date>=cutoff90date);if(prunedEvts.length<evts.length)localStorage.setItem(K_CAL,JSON.stringify(prunedEvts));const thoughts=safeJsonParse(localStorage.getItem(VOICE_KEY),[]);if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
@@ -2307,14 +2315,17 @@ function signOutSync(){
 function setSyncUI(on, name=''){
   const btn=document.getElementById('syncBtn');
   const sub=document.getElementById('syncSubLabel');
+  const snr=document.getElementById('syncNowRow');
   if(!btn||!sub)return;
   if(on){
     btn.textContent='Sign Out'; btn.className='sync-btn connected';
     sub.textContent=name ? 'Signed in as '+name : 'Synced across your devices';
+    if(snr)snr.style.display='';
     setSyncDot('active');
   } else {
     btn.textContent='Sign In'; btn.className='sync-btn';
     sub.textContent='Sign in to sync between iPhone & iPad';
+    if(snr)snr.style.display='none';
     setSyncDot('');
   }
 }
@@ -2350,6 +2361,7 @@ if(!window._visibilityListenerAdded){
     if(document.visibilityState==='hidden'){
       if(fbUser&&fbDb) flushPendingPushes();
     } else if(document.visibilityState==='visible'){
+      checkReset();updateHeader();renderAll();
       if(fbUser&&fbDb) pullFromCloud(true);
     }
   });
