@@ -2209,7 +2209,7 @@ function initFirebase(){
               if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
               setSyncDot('active');
             }
-          },err=>{ console.warn('Sync listener error:',err); showToast('Sync error: '+(err.code||err.message||'unknown error')); });
+          },err=>{ console.warn('Sync listener error:',err); showToast('Sync error: '+(err.message||err.code||'unknown error')); });
       } else {
         setSyncUI(false);
       }
@@ -2225,10 +2225,8 @@ async function pushKeyToCloud(key,val){
       .collection('sync').doc('appData')
       .set({[key]:val, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     setSyncDot('active');
-  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.code||e.message||'unknown error')); }
-}
-
-async function pullFromCloud(){
+  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
+}(){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
