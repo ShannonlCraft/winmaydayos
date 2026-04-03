@@ -2205,11 +2205,12 @@ function initFirebase(){
               }
             });
             if(changed){
+              if(typeof load==='function')load();
               if(typeof renderAll==='function')setTimeout(renderAll,100);
               if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
               setSyncDot('active');
             }
-          },err=>console.warn('Sync listener error:',err));
+          },err=>{ console.warn('Sync listener error:',err); showToast('Sync error: '+(err.message||err.code||'unknown error')); });
       } else {
         setSyncUI(false);
       }
@@ -2225,10 +2226,8 @@ async function pushKeyToCloud(key,val){
       .collection('sync').doc('appData')
       .set({[key]:val, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     setSyncDot('active');
-  }catch(e){ setSyncDot(''); }
-}
-
-async function pullFromCloud(){
+  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
+}(){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
@@ -2238,6 +2237,7 @@ async function pullFromCloud(){
       const data=doc.data();
       SYNC_KEYS.forEach(k=>{ if(data[k]!==undefined) localStorage.setItem.__original?localStorage.setItem.__original(k,data[k]):Object.getPrototypeOf(localStorage).setItem.call(localStorage,k,data[k]); });
       // Reload app data without refreshing page
+      if(typeof load==='function')load();
       if(typeof renderAll==='function') setTimeout(renderAll,100);
       if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
       showToast('✓ Synced from cloud');
