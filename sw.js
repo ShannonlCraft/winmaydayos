@@ -3,7 +3,7 @@
    and offline caching so the app works without internet.
 */
 
-const CACHE_NAME = 'myday-v3';
+const CACHE_NAME = 'myday-v4';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 /* ── Install: cache core files ── */
