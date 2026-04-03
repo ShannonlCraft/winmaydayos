@@ -2243,7 +2243,7 @@ async function pullFromCloud(){
       showToast('✓ Synced from cloud');
     }
     setSyncDot('active');
-  }catch(e){ setSyncDot(''); showToast('Sync read failed'); }
+  }catch(e){ setSyncDot(''); showToast('Sync read failed: '+(e.code||e.message||'unknown error')); }
 }
 
 async function pushAllToCloud(){
@@ -2256,7 +2256,7 @@ async function pushAllToCloud(){
       .collection('sync').doc('appData').set(payload,{merge:true});
     setSyncDot('active');
     showToast('✓ Data backed up to cloud');
-  }catch(e){ setSyncDot(''); showToast('Sync write failed'); }
+  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.code||e.message||'unknown error')); }
 }
 
 function handleSyncBtn(){
@@ -2271,7 +2271,12 @@ function signInSync(){
   // auth state between shannonlcraft.github.io and firebaseapp.com.
   fbAuth.signInWithPopup(provider).catch(e=>{
     console.warn('signInWithPopup error:',e.code,e.message);
-    showToast(e.code==='auth/popup-blocked'?'Pop-up blocked — try again':'Sign in cancelled');
+    let msg='Sign in cancelled';
+    if(e.code==='auth/popup-blocked')msg='Pop-up blocked — try again';
+    else if(e.code==='auth/unauthorized-domain')msg='Domain not authorized in Firebase — add this site to Firebase Console → Auth → Authorized Domains';
+    else if(e.code==='auth/network-request-failed')msg='No internet connection — check your network';
+    else if(e.code&&e.code!=='auth/popup-closed-by-user')msg='Sign in error: '+e.code;
+    showToast(msg);
   });
 }
 
