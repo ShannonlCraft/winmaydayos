@@ -2331,7 +2331,8 @@ try{localStorage.removeItem('_syncPatched');}catch(e){}
 
 // Flush any pending debounced pushes immediately (e.g. before app goes to background)
 function flushPendingPushes(){
-  Object.keys(_pushPendingKeys).forEach(key=>{
+  const keys=Object.keys(_pushPendingKeys);
+  keys.forEach(key=>{
     clearTimeout(_pushDebounceTimers[key]);
     delete _pushDebounceTimers[key];
     const val=_pushPendingKeys[key];
@@ -2343,13 +2344,16 @@ function flushPendingPushes(){
 // Re-sync when the app returns to the foreground — handles iOS dropped WebSocket
 // connections after the app has been backgrounded.  Pull silently so there is no
 // distracting toast, and flush any writes that were debounced while backgrounded.
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden'){
-    if(fbUser&&fbDb) flushPendingPushes();
-  } else if(document.visibilityState==='visible'){
-    if(fbUser&&fbDb) pullFromCloud(true);
-  }
-});
+if(!window._visibilityListenerAdded){
+  window._visibilityListenerAdded=true;
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'){
+      if(fbUser&&fbDb) flushPendingPushes();
+    } else if(document.visibilityState==='visible'){
+      if(fbUser&&fbDb) pullFromCloud(true);
+    }
+  });
+}
 
 document.addEventListener('DOMContentLoaded', initFirebase);
 
