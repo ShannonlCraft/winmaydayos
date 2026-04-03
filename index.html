@@ -2166,6 +2166,7 @@ const FIREBASE_CONFIG = {
 const SYNC_KEYS = ['sc_alarm_sound_v1', 'sc_cal_v2', 'sc_conf_v4', 'sc_custom_cats_v1', 'sc_custom_conf_v1', 'sc_gcal_cfg_v2', 'sc_grat_v4', 'sc_habit_v4', 'sc_habits_list_v1', 'sc_intention_v1', 'sc_notes_v4', 'sc_prayers_v1', 'sc_recur_done_v1', 'sc_recurring_v1', 'sc_reset_v4', 'sc_scropen_v4', 'sc_settings_v2', 'sc_soap_v1', 'sc_streak_v4', 'sc_tasks_v4', 'sc_thoughts_v1', 'sc_total_v4', 'sc_wins_v4'];
 
 let fbApp=null, fbAuth=null, fbDb=null, fbUser=null, syncPending=false, _firestoreUnsub=null;
+const _pushDebounceTimers={}, _pushPendingKeys={};
 
 function initFirebase(){
   try{
@@ -2182,8 +2183,11 @@ function initFirebase(){
       window._syncPatched=true;
       const _orig=localStorage.setItem.bind(localStorage);
       localStorage.setItem.__original=_orig;
-      const _pushDebounceTimers={};
-      function debouncedPush(key,val){clearTimeout(_pushDebounceTimers[key]);_pushDebounceTimers[key]=setTimeout(()=>pushKeyToCloud(key,val),5000);}
+      function debouncedPush(key,val){
+        _pushPendingKeys[key]=val;
+        clearTimeout(_pushDebounceTimers[key]);
+        _pushDebounceTimers[key]=setTimeout(()=>{delete _pushPendingKeys[key];pushKeyToCloud(key,val);},5000);
+      }
       localStorage.setItem=function(key,val){
         _orig(key,val);
         if(fbUser&&SYNC_KEYS.includes(key))debouncedPush(key,val);
@@ -2242,7 +2246,7 @@ async function pushKeyToCloud(key,val){
   }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
 }
 
-async function pullFromCloud(){
+async function pullFromCloud(silent=false){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
@@ -2255,10 +2259,10 @@ async function pullFromCloud(){
       if(typeof load==='function')load();
       if(typeof renderAll==='function') setTimeout(renderAll,100);
       if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
-      showToast('✓ Synced from cloud');
+      if(!silent) showToast('✓ Synced from cloud');
     }
     setSyncDot('active');
-  }catch(e){ setSyncDot(''); showToast('Sync read failed: '+(e.code||e.message||'unknown error')); }
+  }catch(e){ setSyncDot(''); if(!silent) showToast('Sync read failed: '+(e.code||e.message||'unknown error')); }
 }
 
 async function pushAllToCloud(){
@@ -2324,6 +2328,33 @@ function setSyncDot(state){
 // Init on load
 // Clear stale syncPatched flag from localStorage (old bug — now uses window flag)
 try{localStorage.removeItem('_syncPatched');}catch(e){}
+
+// Flush any pending debounced pushes immediately (e.g. before app goes to background)
+function flushPendingPushes(){
+  const keys=Object.keys(_pushPendingKeys);
+  keys.forEach(key=>{
+    clearTimeout(_pushDebounceTimers[key]);
+    delete _pushDebounceTimers[key];
+    const val=_pushPendingKeys[key];
+    delete _pushPendingKeys[key];
+    pushKeyToCloud(key,val);
+  });
+}
+
+// Re-sync when the app returns to the foreground — handles iOS dropped WebSocket
+// connections after the app has been backgrounded.  Pull silently so there is no
+// distracting toast, and flush any writes that were debounced while backgrounded.
+if(!window._visibilityListenerAdded){
+  window._visibilityListenerAdded=true;
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'){
+      if(fbUser&&fbDb) flushPendingPushes();
+    } else if(document.visibilityState==='visible'){
+      if(fbUser&&fbDb) pullFromCloud(true);
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', initFirebase);
 
 </script>
