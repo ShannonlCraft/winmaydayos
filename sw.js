@@ -24,10 +24,21 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-/* ── Fetch: serve from cache, fall back to network ── */
+/* ── Fetch: stale-while-revalidate for GET requests ── */
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(event.request).then(cached => {
+        const networkFetch = fetch(event.request).then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            cache.put(event.request, response.clone());
+          }
+          return response;
+        }).catch(() => null);
+        return cached || networkFetch;
+      })
+    )
   );
 });
 
@@ -74,7 +85,7 @@ self.addEventListener('message', event => {
           tag: id,
           requireInteraction: false,
         });
-      } catch(e) {}
+      } catch(e) { console.warn('SW showNotification failed:', e); }
     }, delay);
 
     scheduledNotifs.set(id, timer);
