@@ -2227,7 +2227,9 @@ async function pushKeyToCloud(key,val){
       .set({[key]:val, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     setSyncDot('active');
   }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
-}(){
+}
+
+async function pullFromCloud(){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
