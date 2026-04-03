@@ -2161,28 +2161,22 @@ function initFirebase(){
     fbApp  = firebase.initializeApp(FIREBASE_CONFIG);
     fbAuth = firebase.auth();
     fbDb   = firebase.firestore();
-    // Patch localStorage.setItem to auto-sync
-    if(localStorage._syncPatched)return;
-    localStorage._syncPatched=true;
-    const _orig = localStorage.setItem.bind(localStorage);
-    localStorage.setItem.__original = _orig;
-    const _pushDebounceTimers={};
-    function debouncedPush(key,val){clearTimeout(_pushDebounceTimers[key]);_pushDebounceTimers[key]=setTimeout(()=>pushKeyToCloud(key,val),1500);}
-    localStorage.setItem = function(key,val){
-      _orig(key,val);
-      if(fbUser && SYNC_KEYS.includes(key)) debouncedPush(key,val);
-    };
-    // Handle redirect sign-in result (iOS/iPadOS flow)
-    fbAuth.getRedirectResult().then(result=>{
-      if(result&&result.user){
-        console.log('Redirect sign-in complete:',result.user.email);
-      }
-    }).catch(e=>{
-      if(e.code&&e.code!=='auth/no-current-user'){
-        showToast('Sign-in error: '+e.message);
-        console.warn('getRedirectResult error:',e);
-      }
-    });
+    // Note: signInWithRedirect removed — Safari ITP blocks cross-domain auth state
+    // when app is on github.io but authDomain is firebaseapp.com.
+    // signInWithPopup works on all platforms when triggered by a direct user gesture.
+    // Patch localStorage.setItem once per session (window flag, not localStorage)
+    // so this doesn't block auth on every page load after the first visit.
+    if(!window._syncPatched){
+      window._syncPatched=true;
+      const _orig=localStorage.setItem.bind(localStorage);
+      localStorage.setItem.__original=_orig;
+      const _pushDebounceTimers={};
+      function debouncedPush(key,val){clearTimeout(_pushDebounceTimers[key]);_pushDebounceTimers[key]=setTimeout(()=>pushKeyToCloud(key,val),1500);}
+      localStorage.setItem=function(key,val){
+        _orig(key,val);
+        if(fbUser&&SYNC_KEYS.includes(key))debouncedPush(key,val);
+      };
+    }
     // Silent auth timeout
     let _authResolved=false;
     const _authTimeout=setTimeout(()=>{ if(!_authResolved){ setSyncUI(false); } },20000);
@@ -2272,17 +2266,13 @@ function handleSyncBtn(){
 function signInSync(){
   if(!fbAuth){ showToast('Firebase not configured yet'); return; }
   const provider = new firebase.auth.GoogleAuthProvider();
-  // Detect iOS/iPadOS (modern iPads report MacIntel platform)
-  const _ua=navigator.userAgent||'';
-  const isIOS=(/iPad|iPhone|iPod/.test(_ua))||
-              (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)||
-              (/Mac/.test(_ua)&&navigator.maxTouchPoints>1);
-  if(isIOS){
-    localStorage.setItem('sc_sync_pending','1');
-    fbAuth.signInWithRedirect(provider);
-  } else {
-    fbAuth.signInWithPopup(provider).catch(e=>{console.warn('signInWithPopup error:',e.code,e.message);showToast(e.code==='auth/popup-blocked'?'Pop-up blocked — try again':'Sign in cancelled');});
-  }
+  // Use signInWithPopup on all platforms — works on iOS when triggered by a user tap.
+  // signInWithRedirect was replaced because Safari ITP blocks the cross-domain
+  // auth state between shannonlcraft.github.io and firebaseapp.com.
+  fbAuth.signInWithPopup(provider).catch(e=>{
+    console.warn('signInWithPopup error:',e.code,e.message);
+    showToast(e.code==='auth/popup-blocked'?'Pop-up blocked — try again':'Sign in cancelled');
+  });
 }
 
 function signOutSync(){
@@ -2312,6 +2302,8 @@ function setSyncDot(state){
 }
 
 // Init on load
+// Clear stale syncPatched flag from localStorage (old bug — now uses window flag)
+try{localStorage.removeItem('_syncPatched');}catch(e){}
 document.addEventListener('DOMContentLoaded', initFirebase);
 
 </script>
