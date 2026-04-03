@@ -2205,6 +2205,7 @@ function initFirebase(){
               }
             });
             if(changed){
+              if(typeof load==='function')load();
               if(typeof renderAll==='function')setTimeout(renderAll,100);
               if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
               setSyncDot('active');
@@ -2236,6 +2237,7 @@ async function pushKeyToCloud(key,val){
       const data=doc.data();
       SYNC_KEYS.forEach(k=>{ if(data[k]!==undefined) localStorage.setItem.__original?localStorage.setItem.__original(k,data[k]):Object.getPrototypeOf(localStorage).setItem.call(localStorage,k,data[k]); });
       // Reload app data without refreshing page
+      if(typeof load==='function')load();
       if(typeof renderAll==='function') setTimeout(renderAll,100);
       if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
       showToast('✓ Synced from cloud');
