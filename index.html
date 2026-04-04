@@ -2194,10 +2194,11 @@ function initFirebase(){
       function debouncedPush(key,val){
         _pushPendingKeys[key]=val;
         clearTimeout(_pushDebounceTimers[key]);
-        _pushDebounceTimers[key]=setTimeout(()=>{delete _pushPendingKeys[key];pushKeyToCloud(key,val);},5000);
+        _pushDebounceTimers[key]=setTimeout(()=>{delete _pushPendingKeys[key];pushKeyToCloud(key,val);},1500);
       }
       localStorage.setItem=function(key,val){
         _orig(key,val);
+        if(SYNC_KEYS.includes(key)) _orig('_localModTs', Date.now().toString());
         if(fbUser&&SYNC_KEYS.includes(key))debouncedPush(key,val);
       };
     }
@@ -2234,6 +2235,13 @@ function initFirebase(){
               if(typeof injectRecurring==='function')injectRecurring();
               if(typeof renderAll==='function')setTimeout(renderAll,100);
               if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
+              if(typeof loadGratitude==='function')setTimeout(loadGratitude,120);
+              setTimeout(()=>{
+                const _sv=document.getElementById('spiritualView');
+                if(_sv&&_sv.style.display!=='none'&&typeof renderSpiritualPage==='function')renderSpiritualPage();
+                const _vv=document.getElementById('voiceView');
+                if(_vv&&_vv.style.display!=='none'&&typeof renderFolders==='function')renderFolders();
+              },200);
               setSyncDot('active');
             }
           },err=>{ console.warn('Sync listener error:',err); showToast('Sync error: '+(err.message||err.code||'unknown error')); });
@@ -2251,6 +2259,8 @@ async function pushKeyToCloud(key,val){
     await fbDb.collection('users').doc(fbUser.uid)
       .collection('sync').doc('appData')
       .set({[key]:val, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    const _orig2=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
+    _orig2('_lastPushedTs', Date.now().toString());
     setSyncDot('active');
   }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
 }
@@ -2263,13 +2273,34 @@ async function pullFromCloud(silent=false){
       .collection('sync').doc('appData').get();
     if(doc.exists){
       const data=doc.data();
-      SYNC_KEYS.forEach(k=>{ if(data[k]!==undefined) localStorage.setItem.__original?localStorage.setItem.__original(k,data[k]):Object.getPrototypeOf(localStorage).setItem.call(localStorage,k,data[k]); });
-      // Reload app data without refreshing page
-      if(typeof load==='function')load();
-      if(typeof injectRecurring==='function')injectRecurring();
-      if(typeof renderAll==='function') setTimeout(renderAll,100);
-      if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
-      if(!silent) showToast('✓ Synced from cloud');
+      const cloudTs=data._ts?data._ts.toMillis():0;
+      const localModTs=parseInt(localStorage.getItem('_localModTs')||'0');
+      const lastPushedTs=parseInt(localStorage.getItem('_lastPushedTs')||'0');
+      // If local was modified after the last successful push AND after the cloud timestamp,
+      // local is newer — push up instead of overwriting local with stale cloud data
+      if(localModTs>lastPushedTs&&localModTs>cloudTs){
+        await pushAllToCloud();
+        return;
+      }
+      const orig=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
+      let changed=false;
+      SYNC_KEYS.forEach(k=>{
+        if(data[k]!==undefined&&data[k]!==localStorage.getItem(k)){orig(k,data[k]);changed=true;}
+      });
+      if(changed){
+        if(typeof load==='function')load();
+        if(typeof injectRecurring==='function')injectRecurring();
+        if(typeof renderAll==='function') setTimeout(renderAll,100);
+        if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
+        if(typeof loadGratitude==='function') setTimeout(loadGratitude,120);
+        setTimeout(()=>{
+          const _sv=document.getElementById('spiritualView');
+          if(_sv&&_sv.style.display!=='none'&&typeof renderSpiritualPage==='function')renderSpiritualPage();
+          const _vv=document.getElementById('voiceView');
+          if(_vv&&_vv.style.display!=='none'&&typeof renderFolders==='function')renderFolders();
+        },200);
+      }
+      if(!silent) showToast(changed?'✓ Synced from cloud':'✓ Already up to date');
     }
     setSyncDot('active');
   }catch(e){ setSyncDot(''); if(!silent) showToast('Sync read failed: '+(e.code||e.message||'unknown error')); }
@@ -2283,6 +2314,8 @@ async function pushAllToCloud(){
     setSyncDot('syncing');
     await fbDb.collection('users').doc(fbUser.uid)
       .collection('sync').doc('appData').set(payload,{merge:true});
+    const _orig2=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
+    _orig2('_lastPushedTs', Date.now().toString());
     setSyncDot('active');
     showToast('✓ Data backed up to cloud');
   }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.code||e.message||'unknown error')); }
@@ -2364,7 +2397,8 @@ if(!window._visibilityListenerAdded){
       if(fbUser&&fbDb) flushPendingPushes();
     } else if(document.visibilityState==='visible'){
       checkReset();updateHeader();renderAll();
-      if(fbUser&&fbDb) pullFromCloud(true);
+      // Only pull if no local changes are pending — prevents overwriting unsaved data
+      if(fbUser&&fbDb&&Object.keys(_pushPendingKeys).length===0) pullFromCloud(true);
     }
   });
 }
