@@ -837,7 +837,7 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
         </div>
         <button class="sync-btn" id="syncBtn" onclick="handleSyncBtn()">Sign In</button>
       </div>
-      <div class="settings-row" id="syncNowRow" style="display:none;cursor:pointer" onclick="pushAllToCloud().then(()=>pullFromCloud()).catch(()=>{})">
+      <div class="settings-row" id="syncNowRow" style="display:none;cursor:pointer" onclick="pullFromCloud().then(()=>pushAllToCloud()).catch(()=>{})">
         <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg></div>
         <div class="settings-row-body"><div class="settings-row-label">Sync Now</div><div class="settings-row-sub">Push your data to cloud and pull latest</div></div>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--l3)"><polyline points="9 18 15 12 9 6"/></svg>
@@ -2231,6 +2231,7 @@ function initFirebase(){
             });
             if(changed){
               if(typeof load==='function')load();
+              if(typeof injectRecurring==='function')injectRecurring();
               if(typeof renderAll==='function')setTimeout(renderAll,100);
               if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
               setSyncDot('active');
@@ -2265,6 +2266,7 @@ async function pullFromCloud(silent=false){
       SYNC_KEYS.forEach(k=>{ if(data[k]!==undefined) localStorage.setItem.__original?localStorage.setItem.__original(k,data[k]):Object.getPrototypeOf(localStorage).setItem.call(localStorage,k,data[k]); });
       // Reload app data without refreshing page
       if(typeof load==='function')load();
+      if(typeof injectRecurring==='function')injectRecurring();
       if(typeof renderAll==='function') setTimeout(renderAll,100);
       if(typeof renderPrayers==='function') setTimeout(renderPrayers,150);
       if(!silent) showToast('✓ Synced from cloud');
