@@ -2478,8 +2478,11 @@ if(!window._visibilityListenerAdded){
       if(fbUser&&fbDb) flushPendingPushes();
     } else if(document.visibilityState==='visible'){
       checkReset();updateHeader();renderAll();
-      // Only pull if no local changes are pending — prevents overwriting unsaved data
-      if(fbUser&&fbDb&&Object.keys(_pushPendingKeys).length===0) pullFromCloud(true);
+      // On foreground: push local data to cloud (merge-before-push preserves both devices' data).
+      // The real-time onSnapshot listener handles pulling any new data from the other device.
+      // We do NOT pull here — the old pull-on-foreground had complex timestamp logic that could
+      // misfire and overwrite local tasks that hadn't been pushed yet.
+      if(fbUser&&fbDb) pushAllToCloud().catch(()=>{});
     }
   });
 }
