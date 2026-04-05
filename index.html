@@ -1411,7 +1411,7 @@ function renderConf(){
 }
 function toggleConf(i){confState[i]=!confState[i];save();renderConf();renderScore();if(confState[i])showToast('Confession spoken');}
 function addTask(){const inp=el('taskInput'),text=inp.value.trim();if(!text){inp.focus();return;}const deadlineEl=el('taskDeadline'),deadline=deadlineEl?deadlineEl.value:'';const task={id:Date.now(),text,completed:false,createdAt:new Date().toISOString(),deadline:deadline||null};tasks.unshift(task);save();renderTasks();renderStats();renderProgress();updateBadge();renderScore();renderMomentum();inp.value='';if(deadlineEl)deadlineEl.value='';inp.focus();if(deadline)scheduleDeadlineNotification(task);showToast('Task added');}
-function toggleTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.completed=!t.completed;t.completedAt=t.completed?new Date().toISOString():null;if(t.completed){totalWins=(parseInt(totalWins,10)||0)+1;localStorage.setItem(K.TOTAL,totalWins);}else if(totalWins>0){totalWins=Math.max(0,(parseInt(totalWins,10)||0)-1);localStorage.setItem(K.TOTAL,totalWins);}const e=document.querySelector(`[data-tid="${id}"]`);if(e){e.classList.add('fading');setTimeout(()=>{save();renderAll();},230);}else{save();renderAll();}if(t.completed)showToast('Win recorded');}
+function toggleTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.completed=!t.completed;t.completedAt=t.completed?new Date().toISOString():null;t.updatedAt=new Date().toISOString();if(t.completed){totalWins=(parseInt(totalWins,10)||0)+1;localStorage.setItem(K.TOTAL,totalWins);}else if(totalWins>0){totalWins=Math.max(0,(parseInt(totalWins,10)||0)-1);localStorage.setItem(K.TOTAL,totalWins);}const e=document.querySelector(`[data-tid="${id}"]`);if(e){e.classList.add('fading');setTimeout(()=>{save();renderAll();},230);}else{save();renderAll();}if(t.completed)showToast('Win recorded');}
 function deleteTask(id){const e=document.querySelector(`[data-tid="${id}"]`),go=()=>{tasks=tasks.filter(x=>x.id!==id);save();renderAll();};if(e){e.classList.add('fading');setTimeout(go,230);}else go();}
 function taskRow(t){const dl=t.deadline&&!t.completed?(()=>{const d=new Date(t.deadline),now=new Date(),ip=d<now,lb=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});return`<div style="font-size:10px;font-weight:700;color:${ip?'#ef4444':'var(--orange)'};margin-top:2px;">🔔 ${ip?'Was due':'Due'} ${lb}</div>`;})():'';return`<div class="group-row ${t.completed?'checked':''}" data-tid="${t.id}"><div class="task-sq" onclick="toggleTask(${t.id})">${CHK_SQ}</div><div class="row-body"><div class="row-title">${esc(t.text)}</div>${dl}</div><button class="task-del" onclick="deleteTask(${t.id})" aria-label="Delete">${DEL_ICON}</button></div>`;}
 function renderTasks(){const pending=tasks.filter(t=>!t.completed),done=tasks.filter(t=>t.completed);const pc=el('pendingCard'),dc=el('doneCard'),es=el('emptyState'),dl=el('doneLabel');if(!pc||!dc||!es||!dl)return;if(pending.length){pc.style.display='block';pc.innerHTML=pending.map(taskRow).join('');es.style.display='none';}else{pc.style.display='none';es.style.display='block';const em=el('emptyMsg');if(em)em.textContent=done.length?'All tasks complete.':'Add tasks above to plan your day.';}if(done.length){dc.style.display='block';dc.innerHTML=done.map(taskRow).join('');dl.style.display='block';}else{dc.style.display='none';dl.style.display='none';}}
@@ -1471,10 +1471,10 @@ function toggleFolder(catId){folderOpen[catId]=folderOpen[catId]===false?true:fa
 function deleteThought(id){let t=loadThoughts();t=t.filter(x=>x.id!==id);saveThoughts(t);renderFolders();}
 function shareThought(id){const thoughts=loadThoughts(),t=thoughts.find(x=>x.id===id);if(!t)return;const text=`${t.text}\n\n— Captured ${new Date(t.ts).toLocaleString()}`;if(navigator.share)navigator.share({title:'My Thought',text}).catch(()=>{});else navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard'));}
 let recognition=null,isRecording=false,micFinalText='',_gumStream=null;
-function playMicSound(type){try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);if(type==='start'){osc.frequency.setValueAtTime(880,ctx.currentTime);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);}else{osc.frequency.setValueAtTime(440,ctx.currentTime);osc.frequency.setValueAtTime(330,ctx.currentTime+0.1);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);}osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);}catch(e){}}
+function playMicSound(type){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);if(type==='start'){osc.frequency.setValueAtTime(880,ctx.currentTime);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);}else{osc.frequency.setValueAtTime(440,ctx.currentTime);osc.frequency.setValueAtTime(330,ctx.currentTime+0.1);gain.gain.setValueAtTime(0.1,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);}osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);setTimeout(()=>{try{ctx.close();}catch(e){}},500);}catch(e){}}
 function toggleRecording(){if(isRecording){stopRecording();return;}if(window._micPermGranted){startRecording();return;}if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){startRecording();return;}navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{_gumStream=stream;window._micPermGranted=true;localStorage.setItem('sc_mic_ok','1');startRecording();setTimeout(()=>{if(_gumStream){_gumStream.getTracks().forEach(t=>t.stop());_gumStream=null;}},500);}).catch(()=>{window._micPermGranted=false;localStorage.removeItem('sc_mic_ok');if(_gumStream){_gumStream.getTracks().forEach(t=>t.stop());_gumStream=null;}const ms=el('micStatus'),mt=el('micTranscript');if(ms)ms.textContent='Microphone access denied';if(mt)mt.textContent='Go to Settings → Safari → Microphone → Allow';});}
-function startRecording(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){el('micStatus').textContent='Not supported — use Safari on iPhone';return;}micFinalText='';el('micTranscript').textContent='';el('micStatus').textContent='Listening…';el('micStatus').classList.add('active');el('micBtn').classList.add('recording');isRecording=true;playMicSound('start');function runSession(){if(!isRecording)return;recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-US';recognition.maxAlternatives=1;window._micPermGranted=true;localStorage.setItem('sc_mic_ok','1');recognition.onresult=(e)=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)micFinalText+=e.results[i][0].transcript+' ';else interim=e.results[i][0].transcript;}const _tEl=el('micTranscript');_tEl.innerHTML=(micFinalText.trim()?esc(micFinalText.trim())+' ':'')+( interim?'<span style="opacity:0.4;font-style:italic">'+esc(interim)+'</span>':'');};recognition.onerror=(ev)=>{if(ev.error==='not-allowed'){isRecording=false;window._micPermGranted=false;localStorage.removeItem('sc_mic_ok');recognition.onend=null;try{recognition.abort();}catch(e){}recognition=null;if(_gumStream){_gumStream.getTracks().forEach(t=>t.stop());_gumStream=null;}el('micBtn').classList.remove('recording');el('micStatus').classList.remove('active');el('micStatus').textContent='Microphone access denied';el('micTranscript').textContent='Go to Settings → Safari → Microphone → Allow';return;}recognition.onend=null;if(ev.error==='no-speech'&&isRecording){setTimeout(runSession,100);return;}if(isRecording)setTimeout(runSession,200);};recognition.onend=()=>{if(isRecording)setTimeout(runSession,100);};try{recognition.start();}catch(e){setTimeout(runSession,300);}}runSession();}
-function stopRecording(){isRecording=false;if(recognition){recognition.onend=null;recognition.onerror=null;try{recognition.abort();}catch(e){try{recognition.stop();}catch(e2){}}recognition=null;}playMicSound('stop');el('micStatus').textContent='Tap to capture a thought';el('micStatus').classList.remove('active');el('micBtn').classList.remove('recording');const text=(micFinalText||el('micTranscript').textContent||'').replace(/<[^>]*>/g,'').trim();if(text.length>2){const cat=categorizeWithCustom(text),thought={id:Date.now().toString(),text,ts:new Date().toISOString(),category:cat.id,categoryName:cat.name};const thoughts=loadThoughts();thoughts.push(thought);saveThoughts(thoughts);el('micTranscript').textContent='';micFinalText='';showToast('Thought saved to '+cat.name);renderFolders();}else{el('micTranscript').textContent='';micFinalText='';}}
+function startRecording(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){const ms=el('micStatus');if(ms)ms.textContent='Not supported \u2014 use Safari on iPhone';return;}micFinalText='';const mt=el('micTranscript');if(mt)mt.textContent='';const ms2=el('micStatus');if(ms2){ms2.textContent='Listening\u2026';ms2.classList.add('active');}const mb=el('micBtn');if(mb)mb.classList.add('recording');isRecording=true;playMicSound('start');let _retryCount=0;const MAX_RETRIES=15;function runSession(){if(!isRecording)return;if(_retryCount>=MAX_RETRIES){stopRecording();showToast('Recording timed out \u2014 tap to try again');return;}_retryCount++;recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-US';recognition.maxAlternatives=1;window._micPermGranted=true;localStorage.setItem('sc_mic_ok','1');recognition.onresult=(e)=>{_retryCount=0;let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)micFinalText+=e.results[i][0].transcript+' ';else interim=e.results[i][0].transcript;}const _tEl=el('micTranscript');if(_tEl)_tEl.innerHTML=(micFinalText.trim()?esc(micFinalText.trim())+' ':'')+( interim?'<span style="opacity:0.4;font-style:italic">'+esc(interim)+'</span>':'');};recognition.onerror=(ev)=>{if(ev.error==='not-allowed'){isRecording=false;window._micPermGranted=false;localStorage.removeItem('sc_mic_ok');if(_gumStream){_gumStream.getTracks().forEach(t=>t.stop());_gumStream=null;}const _mb=el('micBtn');if(_mb)_mb.classList.remove('recording');const _ms=el('micStatus');if(_ms){_ms.classList.remove('active');_ms.textContent='Microphone access denied';}const _mt=el('micTranscript');if(_mt)_mt.textContent='Go to Settings \u2192 Safari \u2192 Microphone \u2192 Allow';return;}recognition.onend=null;if(ev.error==='no-speech'&&isRecording){setTimeout(runSession,150);return;}if(ev.error==='aborted'&&isRecording){setTimeout(runSession,300);return;}if(isRecording)setTimeout(runSession,250);};recognition.onend=()=>{if(isRecording)setTimeout(runSession,150);};try{recognition.start();}catch(e){if(isRecording)setTimeout(runSession,400);}}runSession();}
+function stopRecording(){isRecording=false;if(recognition){recognition.onend=null;recognition.onerror=null;try{recognition.stop();}catch(e){}recognition=null;}if(_gumStream){_gumStream.getTracks().forEach(t=>t.stop());_gumStream=null;}playMicSound('stop');const _ms=el('micStatus');if(_ms){_ms.textContent='Tap to capture a thought';_ms.classList.remove('active');}const _mb=el('micBtn');if(_mb)_mb.classList.remove('recording');const _mt=el('micTranscript');const text=(micFinalText||(_mt?_mt.textContent:'')||'').replace(/<[^>]*>/g,'').trim();if(text.length>2){const cat=categorizeWithCustom(text),thought={id:Date.now().toString(),text,ts:new Date().toISOString(),category:cat.id,categoryName:cat.name};const thoughts=loadThoughts();thoughts.push(thought);saveThoughts(thoughts);if(_mt)_mt.textContent='';micFinalText='';showToast('Thought saved to '+cat.name);renderFolders();}else{if(_mt)_mt.textContent='';micFinalText='';}}
 function _dayIdxToDate(k){const n=parseInt(k.slice(1));return'Entry #'+n;}function renderPastNotes(){const container=el('pastNotesSection');if(!container)return;const notes=safeJsonParse(localStorage.getItem(K.NOTES),{});const todayKey=todayStr(),todayOld='d'+Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);const allKeys=Object.keys(notes).filter(k=>k!==todayKey&&k!==todayOld&&notes[k]&&notes[k].trim());const newKeys=allKeys.filter(k=>k.match(/^\d{4}-\d{2}-\d{2}$/)).sort().reverse();const oldKeys=allKeys.filter(k=>k.match(/^d\d+$/)).sort((a,b)=>parseInt(b.slice(1))-parseInt(a.slice(1)));const keys=[...newKeys,...oldKeys];if(!keys.length){container.innerHTML='<div style="border-top:1px solid var(--sep);margin-top:14px;padding-top:14px;"><div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Past Notes</div><div style="font-size:13px;color:var(--l3);font-style:italic;">Notes you write will be saved here for future reference.</div></div>';return;}container.innerHTML='<div style="border-top:1px solid var(--sep);margin-top:14px;padding-top:14px;"><div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Past Notes ('+keys.length+')</div>'+keys.map(k=>{const txt=notes[k];if(!txt||!txt.trim())return'';const label=k.match(/^\d{4}-\d{2}-\d{2}$/)?prettyDate(k):_dayIdxToDate(k);const preview=txt.substring(0,120);return`<div style="background:var(--g2);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;" onclick="event.stopPropagation();const f=this.querySelector('.pn-full');f.style.display=f.style.display==='none'?'block':'none'"><div style="font-size:10px;font-weight:800;color:var(--orange);margin-bottom:5px;">${label}</div><div style="font-size:13px;font-weight:500;color:var(--l2);line-height:1.5;">${esc(preview)}${txt.length>120?'…':''}</div><div class="pn-full" style="display:none;font-size:13px;font-weight:500;color:var(--l1);line-height:1.65;margin-top:10px;white-space:pre-wrap;border-top:1px solid var(--sep);padding-top:10px;">${esc(txt)}</div></div>`;}).join('')+'</div>';}function openModal(){const sc=getDailyItem(SCRIPTURES);el('modalVerseText').textContent=sc.text;el('modalVerseRef').textContent='— '+sc.ref;el('modalIdeas').innerHTML=sc.ideas.map((idea,i)=>`<div class="modal-idea"><div class="modal-idea-num">${i+1}</div><div class="modal-idea-text">${esc(idea)}</div></div>`).join('');loadNote();renderPastNotes();el('modalOverlay').classList.add('open');if(!scriptureOpened){scriptureOpened=true;localStorage.setItem(K.SCR_OPEN,todayStr());renderScore();}}
 function closeModal(e){if(!e||e.target===el('modalOverlay'))el('modalOverlay').classList.remove('open');}
 let _tt;
@@ -1486,7 +1486,7 @@ function loadRecurring(){try{return JSON.parse(localStorage.getItem(K_RECURRING)
 function saveRecurring(l){localStorage.setItem(K_RECURRING,JSON.stringify(l));}
 function getRecurDone(){try{const d=JSON.parse(localStorage.getItem(K_RECUR_DONE)||'{}');if(d.date!==todayStr())return{date:todayStr(),ids:[]};return d;}catch(e){return{date:todayStr(),ids:[]};}}
 function markRecurDone(id){const d=getRecurDone();if(!d.ids.includes(id))d.ids.push(id);localStorage.setItem(K_RECUR_DONE,JSON.stringify(d));}
-function injectRecurring(){const list=loadRecurring();if(!list.length)return;const todayDay=new Date().getDay(),done=getRecurDone();list.forEach(item=>{if(!item.days.includes(todayDay))return;if(done.ids.includes(item.id))return;if(item.type==='task'){const already=tasks.find(t=>t.recurId===item.id&&!t.completed);if(!already)tasks.unshift({id:Date.now()+Math.random(),recurId:item.id,text:item.name,completed:false,createdAt:new Date().toISOString(),recurring:true});}else if(item.type==='habit'){const habits=getHabits(),already=habits.find(h=>h.recurId===item.id);if(!already){habits.push({text:item.name,recurId:item.id,tempToday:true});saveHabitsList(habits);habitState.push(false);}}markRecurDone(item.id);});save();}
+function injectRecurring(){const list=loadRecurring();if(!list.length)return;const todayDay=new Date().getDay(),done=getRecurDone();list.forEach(item=>{if(!item.days.includes(todayDay))return;if(done.ids.includes(item.id))return;if(item.type==='task'){const already=tasks.find(t=>t.recurId===item.id&&!t.completed);if(!already)tasks.unshift({id:Date.now()+Math.floor(Math.random()*1000),recurId:item.id,text:item.name,completed:false,createdAt:new Date().toISOString(),recurring:true});}else if(item.type==='habit'){const habits=getHabits(),already=habits.find(h=>h.recurId===item.id);if(!already){habits.push({text:item.name,recurId:item.id,tempToday:true});saveHabitsList(habits);habitState.push(false);}}markRecurDone(item.id);});save();}
 function cleanRecurringHabits(){const habits=getHabits(),cleaned=habits.filter(h=>!h.tempToday);if(cleaned.length!==habits.length){saveHabitsList(cleaned);habitState=habitState.slice(0,cleaned.length);save();}}
 function toggleRecurDay(btn){btn.classList.toggle('selected');}
 function selectEveryDay(){document.querySelectorAll('.day-pill').forEach(b=>b.classList.add('selected'));}
@@ -1494,7 +1494,7 @@ const K_ALARM='sc_alarm_sound_v1';
 function getAlarmSound(){return localStorage.getItem(K_ALARM)==='true';}
 function toggleAlarmSound(){const current=getAlarmSound();localStorage.setItem(K_ALARM,(!current).toString());const toggle=el('alarmSoundToggle');if(toggle)toggle.className='toggle'+(!current?' on':'');if(!current)playAlarmChime();showToast(!current?'Alarm sound on':'Alarm sound off');}
 function initAlarmToggle(){const toggle=el('alarmSoundToggle');if(toggle)toggle.className='toggle'+(getAlarmSound()?' on':'');}
-function playAlarmChime(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[[0,660],[0.18,880],[0.36,1100]].forEach(([t,freq])=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0,ctx.currentTime+t);gain.gain.linearRampToValueAtTime(0.18,ctx.currentTime+t+0.05);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.5);osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.55);});}catch(e){}}
+function playAlarmChime(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();[[0,660],[0.18,880],[0.36,1100]].forEach(([t,freq])=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0,ctx.currentTime+t);gain.gain.linearRampToValueAtTime(0.18,ctx.currentTime+t+0.05);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.5);osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.55);});setTimeout(()=>{try{ctx.close();}catch(e){}},1500);}catch(e){}}
 function setRecurType(type){recurType=type;el('recurTypeTask').className='type-pill'+(type==='task'?' active':'');el('recurTypeHabit').className='type-pill'+(type==='habit'?' active':'');}
 function addRecurring(){try{const name=el('recurNameInput')?el('recurNameInput').value.trim():'';if(!name){showToast('Enter a task name');return;}const selectedDays=[];document.querySelectorAll('.day-pill.selected').forEach(b=>{selectedDays.push(parseInt(b.dataset.day));});if(!selectedDays.length){showToast('Select at least one day');return;}const notifyTime=(el('recurNotifyTime')&&el('recurNotifyTime').value)||'08:00';const item={id:Date.now().toString(),name,days:selectedDays,type:recurType,notifyTime};const list=loadRecurring();list.push(item);saveRecurring(list);scheduleRecurringNotifications(item);el('recurNameInput').value='';document.querySelectorAll('.day-pill.selected').forEach(b=>b.classList.remove('selected'));if(el('recurNotifyTime'))el('recurNotifyTime').value='08:00';setRecurType('task');renderRecurringList();injectRecurring();renderAll();renderHeaderNextEvent();showToast('"'+name+'" scheduled');}catch(err){showToast('Error saving — try again');console.error('addRecurring:',err);}}
 function deleteRecurring(id){if(_recurTimeouts[id]){_recurTimeouts[id].forEach(t=>clearTimeout(t));delete _recurTimeouts[id];}saveRecurring(loadRecurring().filter(r=>r.id!==id));tasks=tasks.filter(t=>t.recurId!==id);const habits=getHabits().filter(h=>h.recurId!==id);saveHabitsList(habits);habitState=habitState.slice(0,habits.length);save();renderRecurringList();renderAll();showToast('Recurring item removed');}
@@ -2153,7 +2153,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 /* ══ STORAGE MANAGEMENT ══ */
 function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v===null)continue;t+=(k.length+v.length)*2;}return t;}
 function updateStorageMeter(){const used=getStorageBytes(),MAX=5*1024*1024,pct=Math.min(100,(used/MAX)*100);const usedKB=(used/1024).toFixed(0),label=el('storageLabel'),bar=el('storageBar'),detail=el('storageDetail');if(!label)return;label.textContent=usedKB+'KB / 5MB';bar.style.width=pct+'%';bar.style.background=pct>75?'#ef4444':pct>50?'#f59e0b':'var(--orange)';detail.textContent='~'+pct.toFixed(1)+'% used · Auto-cleanup runs on app open';if(pct>80)label.style.color='#ef4444';else if(pct>60)label.style.color='#f59e0b';else label.style.color='var(--orange)';}
-function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPad v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),calendarEvents:safeJsonParse(localStorage.getItem(K_CAL),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
+function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPhone v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),calendarEvents:safeJsonParse(localStorage.getItem(K_CAL),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
 function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=safeJsonParse(localStorage.getItem(K.TASKS),[]),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const cutoff90date=new Date(now-(90*86400*1000)).toISOString().slice(0,10),evts=safeJsonParse(localStorage.getItem(K_CAL),[]),prunedEvts=evts.filter(e=>!e.date||e.date>=cutoff90date);if(prunedEvts.length<evts.length)localStorage.setItem(K_CAL,JSON.stringify(prunedEvts));const thoughts=safeJsonParse(localStorage.getItem(VOICE_KEY),[]);if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
 
 /* ══════════════════════════════════════════════
@@ -2178,34 +2178,50 @@ function _mergeJsonArrays(localJson, cloudJson, idField){
     const cloud=typeof cloudJson==='string'?JSON.parse(cloudJson):(cloudJson||[]);
     if(!Array.isArray(local)||!Array.isArray(cloud))return cloudJson||localJson;
     const byId={};
-    cloud.forEach(item=>{if(item&&item[idField])byId[item[idField]]=item;});
+    const noId=[];
+    cloud.forEach(item=>{
+      if(item&&item[idField])byId[item[idField]]=item;
+      else if(item)noId.push(item);
+    });
     local.forEach(item=>{
-      if(!item||!item[idField])return;
+      if(!item)return;
+      if(!item[idField]){
+        // Items without an id — check for duplicates by text/title/name
+        const sig=item.text||item.title||item.name||JSON.stringify(item);
+        const dup=noId.find(n=>(n.text||n.title||n.name||JSON.stringify(n))===sig);
+        if(!dup)noId.push(item);
+        return;
+      }
       if(!byId[item[idField]]){byId[item[idField]]=item;}
       else{
         const l=item,c=byId[item[idField]];
-        const lTs=new Date(l.completedAt||l.updatedAt||l.timestamp||l.createdAt||l.dateAdded||0).getTime();
-        const cTs=new Date(c.completedAt||c.updatedAt||c.timestamp||c.createdAt||c.dateAdded||0).getTime();
+        const _ts=v=>{ const d=new Date(v); return isNaN(d.getTime())?0:d.getTime(); };
+        const lTs=_ts(l.completedAt||l.updatedAt||l.timestamp||l.createdAt||l.dateAdded||l.ts||0);
+        const cTs=_ts(c.completedAt||c.updatedAt||c.timestamp||c.createdAt||c.dateAdded||c.ts||0);
         if(lTs>=cTs)byId[item[idField]]=item;
       }
     });
-    return JSON.stringify(Object.values(byId));
+    return JSON.stringify([...Object.values(byId),...noId]);
   }catch(e){return cloudJson||localJson;}
 }
 function _mergeWinsHistory(localJson, cloudJson){
   try{
     const local=JSON.parse(localJson||'{}');
     const cloud=JSON.parse(cloudJson||'{}');
+    if(typeof local!=='object'||local===null)return cloudJson||localJson;
+    if(typeof cloud!=='object'||cloud===null)return localJson||cloudJson;
     const merged={...cloud};
     Object.keys(local).forEach(date=>{
-      if(!merged[date])merged[date]=local[date];
-      else merged[date]=[...new Set([...merged[date],...local[date]])];
+      const lArr=Array.isArray(local[date])?local[date]:[];
+      const cArr=Array.isArray(merged[date])?merged[date]:[];
+      if(!merged[date])merged[date]=lArr;
+      else merged[date]=[...new Set([...cArr,...lArr])];
     });
     return JSON.stringify(merged);
   }catch(e){return cloudJson||localJson;}
 }
 // Keys whose values are JSON arrays that must be merged by item id (not overwritten)
-const ARRAY_MERGE_KEYS={'sc_tasks_v4':'id','sc_thoughts_v1':'id','sc_prayers_v1':'id'};
+const ARRAY_MERGE_KEYS={'sc_tasks_v4':'id','sc_thoughts_v1':'id','sc_prayers_v1':'id','sc_cal_v2':'id','sc_recurring_v1':'id'};
 
 const SYNC_KEYS = ['sc_alarm_sound_v1', 'sc_cal_v2', 'sc_conf_v4', 'sc_custom_cats_v1', 'sc_custom_conf_v1', 'sc_gcal_cfg_v2', 'sc_grat_v4', 'sc_habit_v4', 'sc_habits_list_v1', 'sc_intention_v1', 'sc_notes_v4', 'sc_prayers_v1', 'sc_recur_done_v1', 'sc_recurring_v1', 'sc_reset_v4', 'sc_scropen_v4', 'sc_settings_v2', 'sc_soap_v1', 'sc_streak_v4', 'sc_tasks_v4', 'sc_thoughts_v1', 'sc_total_v4', 'sc_wins_v4'];
 
@@ -2230,7 +2246,7 @@ function initFirebase(){
       function debouncedPush(key,val){
         _pushPendingKeys[key]=val;
         clearTimeout(_pushDebounceTimers[key]);
-        _pushDebounceTimers[key]=setTimeout(()=>{delete _pushPendingKeys[key];pushKeyToCloud(key,val);},1500);
+        _pushDebounceTimers[key]=setTimeout(()=>{const latestVal=_pushPendingKeys[key]||val;delete _pushPendingKeys[key];pushKeyToCloud(key,latestVal);},800);
       }
       localStorage.setItem=function(key,val){
         _orig(key,val);
@@ -2297,30 +2313,34 @@ async function pushKeyToCloud(key,val){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
-    let pushVal=val;
-    // For array keys, fetch current cloud value and merge so we don't wipe the other device's items
+    const docRef=fbDb.collection('users').doc(fbUser.uid).collection('sync').doc('appData');
     if(ARRAY_MERGE_KEYS[key]||key==='sc_wins_v4'){
-      const docSnap=await fbDb.collection('users').doc(fbUser.uid)
-        .collection('sync').doc('appData').get();
-      if(docSnap.exists){
-        const cloudVal=docSnap.data()[key];
-        if(cloudVal!=null){
-          pushVal=ARRAY_MERGE_KEYS[key]
-            ?_mergeJsonArrays(val,cloudVal,ARRAY_MERGE_KEYS[key])
-            :_mergeWinsHistory(val,cloudVal);
-          // Keep localStorage consistent with merged result
-          const _origM=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
-          if(pushVal!==val)_origM(key,pushVal);
+      let pushVal=val;
+      await fbDb.runTransaction(async t=>{
+        const docSnap=await t.get(docRef);
+        if(docSnap.exists){
+          const cloudVal=docSnap.data()[key];
+          if(cloudVal!=null){
+            pushVal=ARRAY_MERGE_KEYS[key]
+              ?_mergeJsonArrays(val,cloudVal,ARRAY_MERGE_KEYS[key])
+              :_mergeWinsHistory(val,cloudVal);
+          }
         }
-      }
+        t.set(docRef,{[key]:pushVal,_ts:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      });
+      const _origM=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
+      if(pushVal!==val)_origM(key,pushVal);
+    } else {
+      await docRef.set({[key]:val,_ts:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
-    await fbDb.collection('users').doc(fbUser.uid)
-      .collection('sync').doc('appData')
-      .set({[key]:pushVal, _ts: firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     const _orig2=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
     _orig2('_lastPushedTs', Date.now().toString());
     setSyncDot('active');
-  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.message||e.code||'unknown error')); }
+  }catch(e){
+    setSyncDot('');
+    const now=Date.now();
+    if(now-_pushErrTs>30000){_pushErrTs=now;showToast('⚠️ Sync failed — check connection or re-sign in');}
+  }
 }
 
 async function pullFromCloud(silent=false){
@@ -2375,48 +2395,40 @@ async function pushAllToCloud(){
   if(!fbUser||!fbDb)return;
   try{
     setSyncDot('syncing');
-    // Fetch current cloud snapshot first so we can merge arrays rather than overwrite them
-    const docSnap=await fbDb.collection('users').doc(fbUser.uid)
-      .collection('sync').doc('appData').get();
-    const cloudData=docSnap.exists?docSnap.data():{};
-    const payload={_ts: firebase.firestore.FieldValue.serverTimestamp()};
-    SYNC_KEYS.forEach(k=>{
-      const localVal=localStorage.getItem(k);
-      if(localVal==null)return;
-      if(ARRAY_MERGE_KEYS[k]&&cloudData[k]!=null){
-        payload[k]=_mergeJsonArrays(localVal,cloudData[k],ARRAY_MERGE_KEYS[k]);
-      } else if(k==='sc_wins_v4'&&cloudData[k]!=null){
-        payload[k]=_mergeWinsHistory(localVal,cloudData[k]);
-      } else {
-        payload[k]=localVal;
-      }
+    const docRef=fbDb.collection('users').doc(fbUser.uid).collection('sync').doc('appData');
+    let mergedPayload={};
+    await fbDb.runTransaction(async t=>{
+      const docSnap=await t.get(docRef);
+      const cloudData=docSnap.exists?docSnap.data():{};
+      const payload={_ts:firebase.firestore.FieldValue.serverTimestamp()};
+      SYNC_KEYS.forEach(k=>{
+        const localVal=localStorage.getItem(k);
+        if(localVal==null)return;
+        if(ARRAY_MERGE_KEYS[k]&&cloudData[k]!=null){
+          payload[k]=_mergeJsonArrays(localVal,cloudData[k],ARRAY_MERGE_KEYS[k]);
+        } else if(k==='sc_wins_v4'&&cloudData[k]!=null){
+          payload[k]=_mergeWinsHistory(localVal,cloudData[k]);
+        } else {
+          payload[k]=localVal;
+        }
+      });
+      t.set(docRef,payload,{merge:true});
+      mergedPayload=payload;
     });
     const _orig2=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
-    // Keep local storage consistent with merged values before writing to cloud;
-    // track whether any cloud data was merged in so the UI can be refreshed.
-    let _localMergeChanged=false;
-    SYNC_KEYS.forEach(k=>{if(payload[k]!=null&&payload[k]!==localStorage.getItem(k)){_orig2(k,payload[k]);_localMergeChanged=true;}});
-    await fbDb.collection('users').doc(fbUser.uid)
-      .collection('sync').doc('appData').set(payload,{merge:true});
-    _orig2('_lastPushedTs', Date.now().toString());
-    // When cloud data was merged into local storage, refresh in-memory state and UI so
-    // items added on the other device (tasks, thoughts, etc.) are immediately visible.
-    if(_localMergeChanged){
-      if(typeof load==='function')load();
-      if(typeof injectRecurring==='function')injectRecurring();
-      if(typeof renderAll==='function')setTimeout(renderAll,100);
-      if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
-      if(typeof loadGratitude==='function')setTimeout(loadGratitude,120);
-      setTimeout(()=>{
-        const _sv=document.getElementById('spiritualView');
-        if(_sv&&_sv.style.display!=='none'&&typeof renderSpiritualPage==='function')renderSpiritualPage();
-        const _vv=document.getElementById('voiceView');
-        if(_vv&&_vv.style.display!=='none'&&typeof renderFolders==='function')renderFolders();
-      },200);
-    }
+    SYNC_KEYS.forEach(k=>{if(mergedPayload[k]!=null&&mergedPayload[k]!==localStorage.getItem(k))_orig2(k,mergedPayload[k]);});
+    _orig2('_lastPushedTs',Date.now().toString());
+    if(typeof load==='function')load();
+    if(typeof renderAll==='function')renderAll();
+    if(typeof renderPrayers==='function')renderPrayers();
+    if(typeof loadGratitude==='function')loadGratitude();
+    setTimeout(()=>{
+      const _vv=document.getElementById('voiceView');
+      if(_vv&&_vv.style.display!=='none'&&typeof renderFolders==='function')renderFolders();
+    },50);
     setSyncDot('active');
     showToast('✓ Data backed up to cloud');
-  }catch(e){ setSyncDot(''); showToast('Sync write failed: '+(e.code||e.message||'unknown error')); }
+  }catch(e){setSyncDot('');showToast('Sync write failed');}
 }
 
 function handleSyncBtn(){
@@ -2492,9 +2504,6 @@ if(!window._visibilityListenerAdded){
   window._visibilityListenerAdded=true;
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='hidden'){
-      // Stop any active recording so the mic is released and the in-progress
-      // thought is saved before the app is suspended by iOS.
-      if(typeof isRecording!=='undefined'&&isRecording&&typeof stopRecording==='function')stopRecording();
       if(fbUser&&fbDb) flushPendingPushes();
     } else if(document.visibilityState==='visible'){
       checkReset();updateHeader();renderAll();
@@ -2502,7 +2511,42 @@ if(!window._visibilityListenerAdded){
       // The real-time onSnapshot listener handles pulling any new data from the other device.
       // We do NOT pull here — the old pull-on-foreground had complex timestamp logic that could
       // misfire and overwrite local tasks that hadn't been pushed yet.
-      if(fbUser&&fbDb) pushAllToCloud().catch(()=>{});
+      if(fbUser&&fbDb){
+        // Re-establish onSnapshot if it was dropped during backgrounding
+        if(!_firestoreUnsub&&fbUser){
+          let _lastSyncTs2=null;
+          _firestoreUnsub=fbDb.collection('users').doc(fbUser.uid)
+            .collection('sync').doc('appData')
+            .onSnapshot(snap=>{
+              if(!snap.exists)return;
+              const data=snap.data();
+              const ts=data._ts?data._ts.toMillis():null;
+              if(ts&&ts===_lastSyncTs2)return;
+              _lastSyncTs2=ts;
+              const orig=localStorage.setItem.__original||Object.getPrototypeOf(localStorage).setItem.bind(localStorage);
+              let changed=false;
+              SYNC_KEYS.forEach(k=>{
+                if(data[k]===undefined)return;
+                let newVal=data[k];
+                if(ARRAY_MERGE_KEYS[k]){
+                  newVal=_mergeJsonArrays(localStorage.getItem(k),data[k],ARRAY_MERGE_KEYS[k]);
+                } else if(k==='sc_wins_v4'){
+                  newVal=_mergeWinsHistory(localStorage.getItem(k),data[k]);
+                }
+                if(newVal!==localStorage.getItem(k)){orig(k,newVal);changed=true;}
+              });
+              if(changed){
+                if(typeof load==='function')load();
+                if(typeof injectRecurring==='function')injectRecurring();
+                if(typeof renderAll==='function')setTimeout(renderAll,100);
+                if(typeof renderPrayers==='function')setTimeout(renderPrayers,150);
+                if(typeof loadGratitude==='function')setTimeout(loadGratitude,120);
+                setSyncDot('active');
+              }
+            },err=>{ console.warn('Sync re-listener error:',err); });
+        }
+        pushAllToCloud().catch(()=>{});
+      }
     }
   });
 }
