@@ -24,8 +24,8 @@
   --bg:#000000;--g1:#161616;--g2:#242424;--g3:#333333;--g4:#444444;
   --sep:rgba(255,255,255,0.07);--sep2:rgba(255,255,255,0.11);
   --orange:#E8571A;--orange-s:rgba(232,87,26,0.13);--orange-b:rgba(232,87,26,0.28);
-  --white:#ffffff;--l1:rgba(255,255,255,0.85);--l2:rgba(255,255,255,0.5);
-  --l3:rgba(255,255,255,0.50);--l4:rgba(255,255,255,0.13);
+  --white:#ffffff;--l1:rgba(255,255,255,0.85);--l2:rgba(255,255,255,0.55);
+  --l3:rgba(255,255,255,0.35);--l4:rgba(255,255,255,0.13);
   --r-lg:16px;--r-md:12px;--r-sm:8px;
 }
 html,body{height:100%;overflow-x:hidden;}
@@ -921,6 +921,13 @@ mark{background:rgba(255,165,0,.3);color:var(--orange);border-radius:3px;padding
           <div class="settings-row-body"><div class="settings-row-label">Export All Data</div><div class="settings-row-sub">Download a backup of everything</div></div>
         </div>
       </div>
+      <div class="settings-row" style="cursor:pointer;padding:14px 16px;" onclick="triggerImportData()">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <div class="settings-row-icon neutral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="settings-row-body"><div class="settings-row-label">Import / Restore Data</div><div class="settings-row-sub">Restore from a previous backup file</div></div>
+        </div>
+      </div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)">
       <div style="padding:12px 16px;border-top:1px solid var(--sep);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <div style="font-size:12px;font-weight:700;color:var(--l2);">Storage Used</div>
@@ -1442,7 +1449,7 @@ function checkReset(){
   const done=tasks.filter(t=>t.completed);
   if(done.length){done.forEach(t=>{const cd=new Date(t.completedAt||Date.now());const k=`${cd.getFullYear()}-${p(cd.getMonth()+1)}-${p(cd.getDate())}`;winsHistory[k]=[...(winsHistory[k]||[]),t.text];});}
   tasks=tasks.filter(t=>!t.completed);
-  confState=[false,false,false,false,false];
+  confState=new Array(getDailyConfessions().length).fill(false);
   cleanRecurringHabits();
   habitState=new Array(getHabits().length).fill(false);
   scriptureOpened=false;
@@ -1477,11 +1484,9 @@ function renderConf(){
   card.innerHTML=header+rows;
 }
 function toggleConf(i){confState[i]=!confState[i];save();renderConf();renderScore();if(confState[i])showToast('Confession spoken');}
-function addTask(){const inp=el('taskInput'),text=inp.value.trim();if(!text){inp.focus();return;}const deadlineEl=el('taskDeadline'),deadline=deadlineEl?deadlineEl.value:'';const task={id:Date.now(),text,completed:false,createdAt:new Date().toISOString(),deadline:deadline||null};tasks.unshift(task);save();renderTasks();renderStats();renderProgress();updateBadge();renderScore();renderMomentum();inp.value='';if(deadlineEl)deadlineEl.value='';inp.focus();if(deadline)scheduleDeadlineNotification(task);showToast('Task added');}
+function addTask(){const inp=el('taskInput'),text=inp?inp.value.trim():'';if(!text){if(inp)inp.focus();return;}const deadlineEl=el('taskDeadline'),deadline=deadlineEl?deadlineEl.value:'';const task={id:Date.now(),text,completed:false,createdAt:new Date().toISOString(),deadline:deadline||null,priority:_selectedPriority||'',pinned:false,notes:''};tasks.unshift(task);save();renderTasks();renderStats();renderProgress();updateBadge();renderScore();renderMomentum();inp.value='';if(deadlineEl)deadlineEl.value='';inp.focus();if(deadline)scheduleDeadlineNotification(task);showToast('Task added');selectPriority('');}
 function toggleTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.completed=!t.completed;t.completedAt=t.completed?new Date().toISOString():null;if(t.completed){totalWins=(parseInt(totalWins,10)||0)+1;localStorage.setItem(K.TOTAL,totalWins);}else if(totalWins>0){totalWins=Math.max(0,(parseInt(totalWins,10)||0)-1);localStorage.setItem(K.TOTAL,totalWins);}const e=document.querySelector(`[data-tid="${id}"]`);if(e){e.classList.add('fading');setTimeout(()=>{save();renderAll();},230);}else{save();renderAll();}if(t.completed)showToast('Win recorded');}
 function deleteTask(id){const e=document.querySelector(`[data-tid="${id}"]`),go=()=>{tasks=tasks.filter(x=>x.id!==id);save();renderAll();};if(e){e.classList.add('fading');setTimeout(go,230);}else go();}
-function taskRow(t){const dl=t.deadline&&!t.completed?(()=>{const d=new Date(t.deadline),now=new Date(),ip=d<now,lb=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});return`<div style="font-size:10px;font-weight:700;color:${ip?'#ef4444':'var(--orange)'};margin-top:2px;">🔔 ${ip?'Was due':'Due'} ${lb}</div>`;})():'';return`<div class="group-row ${t.completed?'checked':''}" data-tid="${t.id}"><div class="task-sq" onclick="toggleTask(${t.id})">${CHK_SQ}</div><div class="row-body"><div class="row-title">${esc(t.text)}</div>${dl}</div><button class="task-del" onclick="deleteTask(${t.id})" aria-label="Delete">${DEL_ICON}</button></div>`;}
-function renderTasks(){const pending=tasks.filter(t=>!t.completed),done=tasks.filter(t=>t.completed);const pc=el('pendingCard'),dc=el('doneCard'),es=el('emptyState'),dl=el('doneLabel');if(!pc||!dc||!es||!dl)return;if(pending.length){pc.style.display='block';pc.innerHTML=pending.map(taskRow).join('');es.style.display='none';}else{pc.style.display='none';es.style.display='block';const em=el('emptyMsg');if(em)em.textContent=done.length?'All tasks complete.':'Add tasks above to plan your day.';}if(done.length){dc.style.display='block';dc.innerHTML=done.map(taskRow).join('');dl.style.display='block';}else{dc.style.display='none';dl.style.display='none';}}
 function renderStats(){const p=tasks.filter(t=>!t.completed).length,d=tasks.filter(t=>t.completed).length;const pp=el('pillPending'),pd=el('pillDone');if(!pp||!pd)return;pp.textContent=`${p} left`;pd.textContent=`${d} done`;pd.className='pill'+(d>0?' hot':'');}
 function renderProgress(){const tot=tasks.length,dn=tasks.filter(t=>t.completed).length,wrap=el('progressWrap');if(!tot){wrap.style.display='none';return;}wrap.style.display='block';const pct=Math.round((dn/tot)*100);const fill=el('progressFill'),pv=el('progressVal');if(!fill||!pv)return;fill.style.width=pct+'%';fill.className='progress-fill'+(pct===100?' complete':'');pv.textContent=`${dn} / ${tot}`;}
 const WINS_PAGE_SIZE=90;let _winsShowAll=false;
@@ -1515,7 +1520,7 @@ const ACCENT_COLORS=[{name:'Orange',hex:'#E8571A'},{name:'Blue',hex:'#2563EB'},{
 function loadSettings(){try{return JSON.parse(localStorage.getItem(K_SETTINGS)||'{}');}catch(e){return{};}}
 function saveSettingsData(s){localStorage.setItem(K_SETTINGS,JSON.stringify(s));}
 function applySettings(){const s=loadSettings(),nameEl=el('settingsName'),titleEl=el('settingsAppTitle');if(nameEl&&nameEl.value.trim())s.name=nameEl.value.trim();if(titleEl&&titleEl.value.trim())s.appTitle=titleEl.value.trim();saveSettingsData(s);applySettingsToDOM(s);}
-function applySettingsToDOM(s){const nameEl=document.querySelector('.header-name');if(nameEl){if(s.name&&s.name.trim()){const parts=s.name.trim().split(' '),first=parts[0],last=parts.slice(1).join(' ');nameEl.innerHTML=last?`${esc(first)} <em>${esc(last)}</em>`:`<em>${esc(first)}</em>`;}else nameEl.innerHTML=`<em style="font-style:normal;opacity:0.45;font-size:13px;">Add Name in Settings</em>`;}document.title=(s.appTitle||'My Day')+(s.name?' · '+s.name:'');const accent=s.accent||'#E8571A',r=parseInt(accent.slice(1,3),16),g=parseInt(accent.slice(3,5),16),b=parseInt(accent.slice(5,7),16);document.documentElement.style.setProperty('--orange',accent);document.documentElement.style.setProperty('--orange-s',`rgba(${r},${g},${b},0.13)`);document.documentElement.style.setProperty('--orange-b',`rgba(${r},${g},${b},0.28)`);if(s.lightMode){document.documentElement.style.setProperty('--bg','#f5f5f5');document.documentElement.style.setProperty('--g1','#ffffff');document.documentElement.style.setProperty('--g2','#ebebeb');document.documentElement.style.setProperty('--g3','#d0d0d0');document.documentElement.style.setProperty('--g4','#aaaaaa');document.documentElement.style.setProperty('--sep','rgba(0,0,0,0.07)');document.documentElement.style.setProperty('--sep2','rgba(0,0,0,0.11)');document.documentElement.style.setProperty('--white','#0a0a0a');document.documentElement.style.setProperty('--l1','rgba(0,0,0,0.85)');document.documentElement.style.setProperty('--l2','rgba(0,0,0,0.55)');document.documentElement.style.setProperty('--l3','rgba(0,0,0,0.35)');document.documentElement.style.setProperty('--l4','rgba(0,0,0,0.18)');}else{document.documentElement.style.setProperty('--bg','#000000');document.documentElement.style.setProperty('--g1','#161616');document.documentElement.style.setProperty('--g2','#242424');document.documentElement.style.setProperty('--g3','#333333');document.documentElement.style.setProperty('--g4','#444444');document.documentElement.style.setProperty('--sep','rgba(255,255,255,0.07)');document.documentElement.style.setProperty('--sep2','rgba(255,255,255,0.11)');document.documentElement.style.setProperty('--white','#ffffff');document.documentElement.style.setProperty('--l1','rgba(255,255,255,0.85)');document.documentElement.style.setProperty('--l2','rgba(255,255,255,0.5)');document.documentElement.style.setProperty('--l3','rgba(255,255,255,0.50)');document.documentElement.style.setProperty('--l4','rgba(255,255,255,0.13)');}try{updateBadge();}catch(e){}}
+function applySettingsToDOM(s){const nameEl=document.querySelector('.header-name');if(nameEl){if(s.name&&s.name.trim()){const parts=s.name.trim().split(' '),first=parts[0],last=parts.slice(1).join(' ');nameEl.innerHTML=last?`${esc(first)} <em>${esc(last)}</em>`:`<em>${esc(first)}</em>`;}else nameEl.innerHTML=`<em style="font-style:normal;opacity:0.45;font-size:13px;">Add Name in Settings</em>`;}document.title=(s.appTitle||'My Day')+(s.name?' · '+s.name:'');const accent=s.accent||'#E8571A',r=parseInt(accent.slice(1,3),16),g=parseInt(accent.slice(3,5),16),b=parseInt(accent.slice(5,7),16);document.documentElement.style.setProperty('--orange',accent);document.documentElement.style.setProperty('--orange-s',`rgba(${r},${g},${b},0.13)`);document.documentElement.style.setProperty('--orange-b',`rgba(${r},${g},${b},0.28)`);if(s.lightMode){document.documentElement.style.setProperty('--bg','#f5f5f5');document.documentElement.style.setProperty('--g1','#ffffff');document.documentElement.style.setProperty('--g2','#ebebeb');document.documentElement.style.setProperty('--g3','#d0d0d0');document.documentElement.style.setProperty('--g4','#aaaaaa');document.documentElement.style.setProperty('--sep','rgba(0,0,0,0.07)');document.documentElement.style.setProperty('--sep2','rgba(0,0,0,0.11)');document.documentElement.style.setProperty('--white','#0a0a0a');document.documentElement.style.setProperty('--l1','rgba(0,0,0,0.85)');document.documentElement.style.setProperty('--l2','rgba(0,0,0,0.60)');document.documentElement.style.setProperty('--l3','rgba(0,0,0,0.40)');document.documentElement.style.setProperty('--l4','rgba(0,0,0,0.18)');}else{document.documentElement.style.setProperty('--bg','#000000');document.documentElement.style.setProperty('--g1','#161616');document.documentElement.style.setProperty('--g2','#242424');document.documentElement.style.setProperty('--g3','#333333');document.documentElement.style.setProperty('--g4','#444444');document.documentElement.style.setProperty('--sep','rgba(255,255,255,0.07)');document.documentElement.style.setProperty('--sep2','rgba(255,255,255,0.11)');document.documentElement.style.setProperty('--white','#ffffff');document.documentElement.style.setProperty('--l1','rgba(255,255,255,0.85)');document.documentElement.style.setProperty('--l2','rgba(255,255,255,0.55)');document.documentElement.style.setProperty('--l3','rgba(255,255,255,0.35)');document.documentElement.style.setProperty('--l4','rgba(255,255,255,0.13)');}try{updateBadge();}catch(e){}}
 function renderSettingsView(){const s=loadSettings();const nameEl=el('settingsName'),titleEl=el('settingsAppTitle');if(nameEl)nameEl.value=s.name||'';if(titleEl)titleEl.value=s.appTitle||'';const toggle=el('lightModeToggle');if(toggle)toggle.className='toggle'+(s.lightMode?' on':'');const sw=el('colorSwatches');if(sw)sw.innerHTML=ACCENT_COLORS.map(c=>`<div class="swatch ${(s.accent||'#E8571A')===c.hex?'selected':''}" style="background:${c.hex}" onclick="setAccentColor('${c.hex}')" title="${c.name}"></div>`).join('');const hexIn=el('hexColorInput'),hexPrev=el('hexPreview'),ca=s.accent||'#E8571A';if(hexIn)hexIn.value=ca;if(hexPrev)hexPrev.style.background=ca;renderHabitEditorList();renderRecurringList();initAlarmToggle();}
 function renderHabitEditorList(){const habits=getHabits(),container=el('habitEditorList');if(!container)return;if(!habits.length){container.innerHTML=`<div style="font-size:13px;color:var(--l3);padding:4px 0 8px;font-style:italic;">No habits yet. Add one below.</div>`;return;}container.innerHTML=habits.map((h,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--sep);"><div style="flex:1;font-size:13px;font-weight:600;color:var(--white);">${esc(h.text)}</div><button onclick="deleteHabitFromSettings(${i})" style="width:28px;height:28px;border-radius:7px;background:transparent;border:1px solid var(--sep2);cursor:pointer;color:var(--l3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');}
 function addHabitFromSettings(){const inp=el('newHabitInput'),text=inp?inp.value.trim():'';if(!text)return;const habits=getHabits();habits.push({text});saveHabitsList(habits);habitState.push(false);save();if(inp)inp.value='';renderHabitEditorList();renderHabits();renderScore();showToast('Habit added');}
@@ -1525,7 +1530,7 @@ function setAccentColor(hex){const s=loadSettings();s.accent=hex;saveSettingsDat
 function toggleLightMode(){const s=loadSettings();s.lightMode=!s.lightMode;saveSettingsData(s);applySettingsToDOM(s);renderSettingsView();showToast(s.lightMode?'Light mode on':'Dark mode on');}
 function initSettings(){const s=loadSettings();if(s.lightMode===undefined){s.lightMode=false;saveSettingsData(s);}applySettingsToDOM(s);}
 function manualReset(){const ok=typeof confirm!=='undefined'?confirm("Reset today? This will archive completed tasks and clear today's data."):true;if(!ok)return;markResetDone();checkReset();renderAll();renderPrayers();showToast('Day reset');}
-function clearAllData(){const ok1=typeof confirm!=='undefined'?confirm('Clear ALL data? This cannot be undone.'):false;if(!ok1)return;const ok2=typeof confirm!=='undefined'?confirm('Are you sure?'):false;if(!ok2)return;const sb=localStorage.getItem(K_SETTINGS);localStorage.clear();if(sb)localStorage.setItem(K_SETTINGS,sb);tasks=[];winsHistory={};confState=[false,false,false,false,false];habitState=new Array(getHabits().length).fill(false);streak=0;bestStreak=0;totalWins=0;scriptureOpened=false;renderAll();renderPrayers();showToast('All data cleared');}
+function clearAllData(){const ok1=typeof confirm!=='undefined'?confirm('Clear ALL data? This cannot be undone.'):false;if(!ok1)return;const ok2=typeof confirm!=='undefined'?confirm('Are you sure?'):false;if(!ok2)return;const sb=localStorage.getItem(K_SETTINGS);localStorage.clear();if(sb)localStorage.setItem(K_SETTINGS,sb);tasks=[];winsHistory={};confState=new Array(getDailyConfessions().length).fill(false);habitState=new Array(getHabits().length).fill(false);streak=0;bestStreak=0;totalWins=0;scriptureOpened=false;renderAll();renderPrayers();showToast('All data cleared');}
 const VOICE_KEY='sc_thoughts_v1';
 const CATEGORIES=[{id:'faith',name:'Faith',keywords:['god','pray','prayer','jesus','faith','grateful','gratitude','blessed','scripture','bible','worship','grace','holy','spirit','lord','church'],icon:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22V12m0 0V2m0 10H2m10 0h10"/></svg>`},{id:'ideas',name:'Ideas',keywords:['idea','create','build','design','concept','what if','imagine','vision','plan','strategy','product','brand','content','video','post'],icon:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>`},{id:'tasks',name:'Action Items',keywords:['call','email','text','send','schedule','meet','follow up','reach out','post','publish','submit','finish','complete','need to','have to','must','should'],icon:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`},{id:'personal',name:'Personal',keywords:['feel','feeling','emotion','heart','struggle','hard','joy','happy','sad','angry','anxious','peace','rest','family','friend','relationship','love'],icon:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`},{id:'general',name:'General',keywords:[],icon:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`}];
 function loadThoughts(){try{return JSON.parse(localStorage.getItem(VOICE_KEY)||'[]');}catch(e){return[];}}
@@ -1652,8 +1657,26 @@ function fireNotification(title,body){
 const K_CAL        = 'sc_cal_v2';
 const K_GCAL_CFG   = 'sc_gcal_cfg_v2';
 const K_GCAL_TOKEN = 'sc_gcal_token_v2';
+const K_GCAL_EXPIRY = 'sc_gcal_token_expiry_v2';
 // Migrate old 'gcalToken' key to versioned constant
 (function(){try{const oldToken=localStorage.getItem('gcalToken');if(oldToken){localStorage.setItem(K_GCAL_TOKEN,oldToken);localStorage.removeItem('gcalToken');}}catch(e){}})();
+
+function saveGcalToken(token, expiresIn){
+  localStorage.setItem(K_GCAL_TOKEN, token);
+  const expiry = Date.now() + ((expiresIn || 3600) * 1000) - 60000; // subtract 1 min buffer
+  localStorage.setItem(K_GCAL_EXPIRY, expiry.toString());
+  gcalAccessToken = token;
+}
+function isGcalTokenValid(){
+  const token = localStorage.getItem(K_GCAL_TOKEN);
+  const expiry = parseInt(localStorage.getItem(K_GCAL_EXPIRY) || '0');
+  return !!token && Date.now() < expiry;
+}
+function clearGcalToken(){
+  localStorage.removeItem(K_GCAL_TOKEN);
+  localStorage.removeItem(K_GCAL_EXPIRY);
+  gcalAccessToken = null;
+}
 
 const EV_COLORS = ['#E8571A','#2563EB','#16A34A','#7C3AED','#DC2626','#0D9488','#DB2777','#D97706'];
 const MONTHS_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1669,7 +1692,7 @@ let gcalAccessToken = null;
 /* ── Storage ── */
 function loadCalEvents(){try{return JSON.parse(localStorage.getItem(K_CAL)||'[]');}catch(e){return[];}}
 function saveCalEvents(a){localStorage.setItem(K_CAL,JSON.stringify(a));}
-function loadGcalCfg(){const DEFAULT_CLIENT_ID='67070123114-inj6f9l9ftkck2a886qf900asfog27q6.apps.googleusercontent.com';try{const c=JSON.parse(localStorage.getItem(K_GCAL_CFG)||'{}');if(!c.clientId)c.clientId=DEFAULT_CLIENT_ID;return c;}catch(e){return{clientId:DEFAULT_CLIENT_ID};}}
+function loadGcalCfg(){try{return JSON.parse(localStorage.getItem(K_GCAL_CFG)||'{}');}catch(e){return{};}}
 function saveGcalCfg(c){localStorage.setItem(K_GCAL_CFG,JSON.stringify(c));}
 
 /* ── Open / close ── */
@@ -1678,10 +1701,10 @@ function openCalendar(){
   calViewMonth=new Date().getMonth();
   calSelectedDate=todayStr();
   // Restore token from session, or silently re-auth if connected
-  if(!gcalAccessToken){
-    const stored=localStorage.getItem(K_GCAL_TOKEN);
-    if(stored){gcalAccessToken=stored;}
+  if(!gcalAccessToken||!isGcalTokenValid()){
+    if(isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
     else{
+      clearGcalToken();
       const cfg=loadGcalCfg();
       if(cfg.connected&&cfg.clientId){silentGcalAuth(cfg.clientId);}
     }
@@ -1776,11 +1799,12 @@ function renderDayBody(dateStr){
     const endLabel=(!ev.allDay&&ev.end)?' – '+fmtTime12(ev.end):'';
     const color=ev.color||'var(--orange)';
     const isGcal=ev.fromGcal;
+    const safeId=esc(String(ev.id)).replace(/'/g,'&#39;');
     const actions=!ev.isTask?`
-      <button class="cal-ev-action-btn cal-ev-add-task" onclick="addEventToTasks('${ev.id}');event.stopPropagation()">+ My Tasks</button>
-      ${!isGcal?`<button class="cal-ev-action-btn cal-ev-delete" onclick="deleteLocalEvent('${ev.id}');event.stopPropagation()">Delete</button>`:''}
+      <button class="cal-ev-action-btn cal-ev-add-task" onclick="addEventToTasks('${safeId}');event.stopPropagation()">+ My Tasks</button>
+      ${!isGcal?`<button class="cal-ev-action-btn cal-ev-delete" onclick="deleteLocalEvent('${safeId}');event.stopPropagation()">Delete</button>`:''}
     `:``;
-    return`<div class="cal-ev-card" style="border-left-color:${color}">
+    return`<div class="cal-ev-card" style="border-left-color:${esc(color)}">
       <div class="cal-ev-time-col"><div class="cal-ev-time" style="color:${color}">${timeLabel}${endLabel}</div></div>
       <div class="cal-ev-body">
         <div class="cal-ev-title">${esc(ev.title)}</div>
@@ -1920,8 +1944,7 @@ function initTokenClient(clientId){
       scope:GCAL_SCOPE+' email profile',
       callback:async(resp)=>{
         if(resp.error){showToast('Google auth failed: '+resp.error);renderCalConnectCards();return;}
-        gcalAccessToken=resp.access_token;
-        localStorage.setItem(K_GCAL_TOKEN,resp.access_token);
+        saveGcalToken(resp.access_token, resp.expires_in);
         await syncGcalEvents(resp.access_token);
       }
     });
@@ -2008,7 +2031,7 @@ function disconnectGcal(){
   if(!confirm('Disconnect Google Calendar? Synced events will be removed.'))return;
   saveCalEvents(loadCalEvents().filter(e=>!e.fromGcal));
   const cfg=loadGcalCfg();cfg.connected=false;cfg.email='';saveGcalCfg(cfg);
-  gcalAccessToken=null;
+  clearGcalToken();
   renderCalConnectCards();renderMonthGrid();showToast('Disconnected from Google');
 }
 
@@ -2024,8 +2047,9 @@ function openAddEvent(){
   el('calEvAllDay').value='0';
   calPickedColor=EV_COLORS[0];
   renderColorPicker();
-  // Restore token from session
-  if(!gcalAccessToken){const t=localStorage.getItem(K_GCAL_TOKEN);if(t)gcalAccessToken=t;}
+  // Restore token from session or re-auth if expired
+  if(!gcalAccessToken&&isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
+  else if(!isGcalTokenValid()){clearGcalToken();}
   const cfg=loadGcalCfg();
   // If connected but no token, silently re-auth before opening
   if(cfg.connected&&cfg.clientId&&!gcalAccessToken){
@@ -2065,8 +2089,7 @@ function doSilentAuth(clientId){
       scope:GCAL_SCOPE+' email profile',
       callback:(resp)=>{
         if(resp.error||!resp.access_token)return;
-        gcalAccessToken=resp.access_token;
-        localStorage.setItem(K_GCAL_TOKEN,resp.access_token);
+        saveGcalToken(resp.access_token, resp.expires_in);
         // Update the badge now that we have a token
         const src=el('calAddSource');
         if(src){src.textContent='→ Google Calendar';src.style.background='rgba(37,99,235,0.15)';src.style.color='#2563EB';}
@@ -2096,7 +2119,7 @@ function updateGcalLink(){
   const title=el('calEvTitle')?el('calEvTitle').value.trim():'';
   const date=el('calEvDate')?el('calEvDate').value:'';
   const cfg=loadGcalCfg();
-  const _tok=gcalAccessToken||localStorage.getItem(K_GCAL_TOKEN);
+  const _tok=gcalAccessToken||(isGcalTokenValid()&&localStorage.getItem(K_GCAL_TOKEN));
   if(cfg.connected&&_tok){
     linkDiv.innerHTML=`<span style="color:#2563EB;font-size:11px;font-weight:700;">✓ Will save directly to Google Calendar</span>`;
     return;
@@ -2147,8 +2170,8 @@ async function saveCalEvent(){
   renderHeaderNextEvent();
   // Try to push to Google
   const cfg=loadGcalCfg();
-  if(!gcalAccessToken){const t=localStorage.getItem(K_GCAL_TOKEN);if(t)gcalAccessToken=t;}
-  if(cfg.connected&&gcalAccessToken){
+  if(!gcalAccessToken&&isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
+  if(cfg.connected&&gcalAccessToken&&isGcalTokenValid()){
     el('calSyncStatus').textContent='Saving to Google…';
     const ok=await createGcalEvent(ev);
     if(ok){showToast('Event saved to Google Calendar ✓');}
@@ -2205,7 +2228,7 @@ function parseIcs(text){
 }
 function init(){
   load();updateStreak();checkReset();updateHeader();updateFlipClock();
-  let _lastClockMin=-1;function clockTick(){const now=new Date(),m=now.getMinutes();if(m!==_lastClockMin){updateFlipClock();_lastClockMin=m;}const msUntilNextMin=(60-now.getSeconds())*1000-now.getMilliseconds()+50;setTimeout(clockTick,Math.max(msUntilNextMin,1000));}clockTick();
+  let _lastClockMin=-1;function clockTick(){const now=new Date(),m=now.getMinutes();if(m!==_lastClockMin){updateFlipClock();updateHeader();_lastClockMin=m;}const msUntilNextMin=(60-now.getSeconds())*1000-now.getMilliseconds()+50;setTimeout(clockTick,Math.min(Math.max(msUntilNextMin,500),61000));}clockTick();
   renderDailyContent();loadGratitude();renderAll();set5amTimer();
   renderPrayers();checkIntentionPopup();initSettings();injectRecurring();renderAll();setTimeout(()=>{const _fs=loadSettings();if(!_fs.name||!_fs.name.trim()){showView('settings');showToast('Welcome! Add your name at the top of Settings.');}},600);
   if(typeof Notification!=='undefined'&&Notification.permission==='granted'){registerServiceWorker().then(()=>{ scheduleAllNotifications(); schedule5amSW(); });}
@@ -2219,6 +2242,34 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v===null)continue;t+=(k.length+v.length)*2;}return t;}
 function updateStorageMeter(){const used=getStorageBytes(),MAX=5*1024*1024,pct=Math.min(100,(used/MAX)*100);const usedKB=(used/1024).toFixed(0),label=el('storageLabel'),bar=el('storageBar'),detail=el('storageDetail');if(!label)return;label.textContent=usedKB+'KB / 5MB';bar.style.width=pct+'%';bar.style.background=pct>75?'#ef4444':pct>50?'#f59e0b':'var(--orange)';detail.textContent='~'+pct.toFixed(1)+'% used · Auto-cleanup runs on app open';if(pct>80)label.style.color='#ef4444';else if(pct>60)label.style.color='#f59e0b';else label.style.color='var(--orange)';}
 function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPad v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),calendarEvents:safeJsonParse(localStorage.getItem(K_CAL),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
+function triggerImportData(){el('importFileInput').click();}
+function handleImportFile(e){
+  const f=e.target.files[0];if(!f)return;
+  e.target.value='';
+  const r=new FileReader();
+  r.onload=(ev)=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.exportedAt&&!data.tasks&&!data.settings){showToast('Invalid backup file');return;}
+      const ok=confirm('Restore from backup? This will replace your current data with the backup. Make sure you have exported your current data first.');
+      if(!ok)return;
+      if(data.tasks)localStorage.setItem(K.TASKS,JSON.stringify(data.tasks));
+      if(data.winsHistory)localStorage.setItem(K.WINS,JSON.stringify(data.winsHistory));
+      if(data.soap)localStorage.setItem(K_SOAP,JSON.stringify(data.soap));
+      if(data.thoughts)localStorage.setItem(VOICE_KEY,JSON.stringify(data.thoughts));
+      if(data.prayers)localStorage.setItem(K_PRAYERS,JSON.stringify(data.prayers));
+      if(data.notes)localStorage.setItem(K.NOTES,JSON.stringify(data.notes));
+      if(data.gratitude)localStorage.setItem(K.GRAT,JSON.stringify(data.gratitude));
+      if(data.recurring)localStorage.setItem(K_RECURRING,JSON.stringify(data.recurring));
+      if(data.calendarEvents)localStorage.setItem(K_CAL,JSON.stringify(data.calendarEvents));
+      if(data.settings){const cur=loadSettings();const merged={...cur,...data.settings};saveSettingsData(merged);applySettingsToDOM(merged);}
+      if(data.streak)localStorage.setItem(K.STREAK,JSON.stringify(data.streak));
+      load();renderAll();renderPrayers();renderSettingsView();
+      showToast('Data restored from backup');
+    }catch(err){showToast('Could not read backup file');}
+  };
+  r.readAsText(f);
+}
 function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=safeJsonParse(localStorage.getItem(K.TASKS),[]),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const cutoff90date=new Date(now-(90*86400*1000)).toISOString().slice(0,10),evts=safeJsonParse(localStorage.getItem(K_CAL),[]),prunedEvts=evts.filter(e=>!e.date||e.date>=cutoff90date);if(prunedEvts.length<evts.length)localStorage.setItem(K_CAL,JSON.stringify(prunedEvts));const thoughts=safeJsonParse(localStorage.getItem(VOICE_KEY),[]);if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
 
 
@@ -2306,23 +2357,6 @@ function saveTaskNotes(id,val){
 /* ══════════════════════════════════════════
    UPDATED addTask — priority + notes + pin
 ══════════════════════════════════════════ */
-const _origAddTask=addTask;
-// Override addTask to inject priority
-(function(){
-  const _real=window.addTask;
-  window.addTask=function(){
-    const inp=el('taskInput'),text=inp?inp.value.trim():'';
-    if(!text){if(inp)inp.focus();return;}
-    const deadlineEl=el('taskDeadline'),deadline=deadlineEl?deadlineEl.value:'';
-    const task={id:Date.now(),text,completed:false,createdAt:new Date().toISOString(),deadline:deadline||null,priority:_selectedPriority||'',pinned:false,notes:''};
-    tasks.unshift(task);
-    save();renderTasks();renderStats();renderProgress();updateBadge();renderScore();renderMomentum();
-    inp.value='';if(deadlineEl)deadlineEl.value='';inp.focus();
-    if(deadline)scheduleDeadlineNotification(task);
-    showToast('Task added');
-    selectPriority('');
-  };
-})();
 
 /* ══════════════════════════════════════════
    UPDATED taskRow — priority strip + pin + notes
@@ -2452,7 +2486,7 @@ function fabAddTask(){
   showToast('Task added');
   el('fabModalBg').style.display='none';
   // Show main view so user can see task
-  if(typeof showView==='function')showView('main');
+  if(typeof showView==='function')showView('today');
 }
 // Close FAB modal on keyboard Enter
 document.addEventListener('keydown',e=>{
