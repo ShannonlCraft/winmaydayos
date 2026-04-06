@@ -348,125 +348,6 @@ body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:v
 /* ══ CALENDAR HEADER BUTTON ══ */
 .cal-header-btn{width:34px;height:34px;border-radius:10px;background:var(--g1);border:1px solid var(--sep2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--l2);flex-shrink:0;transition:all .18s;position:relative;}
 .cal-header-btn:active{background:var(--orange-s);border-color:var(--orange-b);color:var(--orange);}
-.cal-header-btn.has-events::after{content:'';position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--orange);border:1.5px solid var(--bg);}
-
-/* ══ SHARED OVERLAY BASE ══ */
-.cal-overlay,.cal-day-overlay{display:none;position:fixed;inset:0;z-index:700;background:var(--bg);flex-direction:column;}
-.cal-overlay.open,.cal-day-overlay.open{display:flex;animation:calSlideUp .3s cubic-bezier(.32,1,.68,1);}
-@keyframes calSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-
-/* ══ TOP BAR ══ */
-.cal-topbar{display:flex;align-items:center;justify-content:space-between;padding:56px 18px 14px;border-bottom:1px solid var(--sep);flex-shrink:0;background:var(--bg);}
-.cal-topbar-left{display:flex;align-items:center;gap:10px;}
-.cal-back-btn{width:32px;height:32px;border-radius:9px;background:var(--g1);border:1px solid var(--sep2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--l2);}
-.cal-back-btn:active{color:var(--orange);}
-.cal-topbar-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.2px;color:var(--white);line-height:1;}
-.cal-topbar-sub{font-size:11px;font-weight:500;color:var(--l3);margin-top:1px;}
-.cal-topbar-actions{display:flex;align-items:center;gap:8px;}
-.cal-close-btn{width:32px;height:32px;border-radius:9px;background:var(--g1);border:1px solid var(--sep2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--l2);}
-.cal-close-btn:active{color:var(--orange);}
-.cal-add-btn{height:32px;padding:0 12px;border-radius:9px;background:var(--orange);color:#fff;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:12px;font-weight:800;display:flex;align-items:center;gap:5px;flex-shrink:0;}
-
-/* ══ CALENDAR BODY ══ */
-.cal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:32px;}
-
-/* ══ CONNECT CARDS ══ */
-.cal-connect-section{padding:14px 16px 0;}
-.cal-connect-card{background:var(--g1);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
-.cal-connect-icon{width:36px;height:36px;border-radius:10px;background:var(--orange-s);border:1px solid var(--orange-b);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--orange);}
-.cal-connect-body{flex:1;min-width:0;}
-.cal-connect-name{font-size:14px;font-weight:700;color:var(--white);}
-.cal-connect-sub{font-size:11px;font-weight:500;color:var(--l3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cal-connect-btn{height:30px;padding:0 14px;border-radius:8px;background:var(--orange);color:#fff;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:11px;font-weight:800;flex-shrink:0;white-space:nowrap;}
-.cal-connect-btn.connected{background:var(--g2);color:var(--l3);border:1px solid var(--sep2);}
-.cal-connect-btn.syncing{background:var(--orange-s);color:var(--orange);border:1px solid var(--orange-b);}
-
-/* Setup card */
-.cal-setup-card{background:var(--bg);border:1.5px solid var(--sep2);border-radius:var(--r-lg);padding:16px;margin:0 16px 8px;}
-.cal-setup-title{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
-.cal-setup-steps{font-size:12px;font-weight:500;color:var(--l3);line-height:1.8;margin-bottom:12px;}
-.cal-setup-steps strong{color:var(--l2);}
-.cal-setup-input{width:100%;background:var(--g1);border:1.5px solid var(--sep2);border-radius:var(--r-sm);padding:10px 12px;font-family:'Manrope',sans-serif;font-size:13px;color:var(--white);outline:none;caret-color:var(--orange);margin-bottom:10px;box-sizing:border-box;}
-.cal-setup-input:focus{border-color:var(--orange);}
-.cal-setup-btns{display:flex;gap:8px;}
-.cal-setup-save{flex:1;background:var(--orange);color:#fff;border:none;border-radius:var(--r-sm);padding:10px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif;cursor:pointer;}
-.cal-setup-cancel{background:var(--g1);color:var(--l3);border:1px solid var(--sep2);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:700;font-family:'Manrope',sans-serif;cursor:pointer;}
-
-/* ══ MONTH GRID ══ */
-.cal-month-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 8px;}
-.cal-month-label{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--white);}
-.cal-nav-btn{width:30px;height:30px;border-radius:8px;background:var(--g1);border:1px solid var(--sep2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--l2);}
-.cal-nav-btn:active{background:var(--orange-s);color:var(--orange);}
-.cal-grid-wrap{padding:0 12px;}
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
-.cal-dow{text-align:center;font-size:9px;font-weight:800;color:var(--l3);text-transform:uppercase;letter-spacing:0.6px;padding:4px 0;}
-.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:5px;border-radius:10px;cursor:pointer;position:relative;transition:background .15s;}
-.cal-day:active{background:var(--g2);}
-.cal-day.today .cal-day-num{background:var(--orange);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
-.cal-day.other-month .cal-day-num{color:var(--l4);}
-.cal-day-num{font-size:13px;font-weight:600;color:var(--white);line-height:1;width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
-.cal-day-dots{display:flex;gap:2px;justify-content:center;margin-top:2px;max-width:30px;flex-wrap:wrap;}
-.cal-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
-
-/* ══ ICS IMPORT ZONE ══ */
-.cal-import-zone{margin:8px 16px;border:1.5px dashed var(--sep2);border-radius:var(--r-lg);padding:18px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
-.cal-import-zone:active,.cal-import-zone.drag{border-color:var(--orange);background:var(--orange-s);}
-.cal-import-icon{width:32px;height:32px;border-radius:9px;background:var(--orange-s);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:var(--orange);}
-.cal-import-label{font-size:13px;font-weight:700;color:var(--l2);}
-.cal-import-sub{font-size:11px;font-weight:500;color:var(--l3);margin-top:3px;}
-
-/* ══ DAY VIEW PAGE ══ */
-.cal-day-date-hero{padding:16px 18px 12px;border-bottom:1px solid var(--sep);flex-shrink:0;}
-.cal-day-date-big{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1.5px;color:var(--white);line-height:1;}
-.cal-day-date-sub{font-size:12px;font-weight:500;color:var(--l3);margin-top:2px;}
-.cal-day-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 32px;}
-
-/* Event cards in day view */
-.cal-ev-card{background:var(--g1);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;border-left:3px solid var(--orange);cursor:pointer;transition:background .12s;}
-.cal-ev-card:active{background:var(--g2);}
-.cal-ev-time-col{flex-shrink:0;width:52px;padding-top:2px;}
-.cal-ev-time{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.4px;line-height:1.4;}
-.cal-ev-body{flex:1;min-width:0;}
-.cal-ev-title{font-size:14px;font-weight:700;color:var(--white);line-height:1.35;margin-bottom:2px;}
-.cal-ev-sub{font-size:11px;font-weight:500;color:var(--l3);}
-.cal-ev-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
-.cal-ev-action-btn{height:26px;padding:0 10px;border-radius:8px;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:10px;font-weight:800;white-space:nowrap;}
-.cal-ev-add-task{background:var(--orange-s);color:var(--orange);}
-.cal-ev-delete{background:var(--g2);color:var(--l3);}
-.cal-ev-delete:active{color:#ef4444;}
-
-.cal-day-empty{text-align:center;padding:40px 20px;color:var(--l3);font-size:13px;font-weight:500;line-height:1.6;}
-
-/* ══ ADD EVENT SHEET ══ */
-.cal-add-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:800;align-items:flex-end;backdrop-filter:blur(8px);}
-.cal-add-overlay.open{display:flex;}
-.cal-add-sheet{background:var(--g1);border-radius:24px 24px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:20px 20px env(safe-area-inset-bottom,32px);}
-.cal-add-handle{width:36px;height:4px;background:var(--g3);border-radius:2px;margin:0 auto 18px;}
-.cal-add-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.cal-add-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--white);}
-.cal-add-source{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.6px;background:var(--orange-s);padding:3px 8px;border-radius:6px;}
-.cal-field{background:var(--bg);border-radius:var(--r-md);border:1.5px solid var(--sep2);padding:11px 14px;margin-bottom:8px;transition:border-color .2s;}
-.cal-field:focus-within{border-color:var(--orange);}
-.cal-field-label{font-size:9px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;}
-.cal-field input,.cal-field textarea,.cal-field select{width:100%;border:none;outline:none;background:transparent;font-family:'Manrope',sans-serif;font-size:14px;font-weight:500;color:var(--white);caret-color:var(--orange);}
-.cal-field input::placeholder,.cal-field textarea::placeholder{color:var(--l4);}
-.cal-field select option{background:var(--g2);color:var(--white);}
-.cal-field-row{display:flex;gap:8px;}
-.cal-field-row .cal-field{flex:1;margin-bottom:8px;}
-.cal-ev-colors{display:flex;gap:8px;flex-wrap:wrap;padding:2px 0;}
-.cal-ev-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;}
-.cal-ev-swatch.sel{border-color:#fff;transform:scale(1.18);}
-.cal-gcal-link{font-size:11px;color:var(--l3);margin-top:4px;line-height:1.5;}
-.cal-gcal-link a{color:var(--orange);font-weight:700;text-decoration:none;}
-.cal-save-btn{width:100%;background:var(--orange);color:#fff;border:none;border-radius:var(--r-md);padding:14px;font-size:14px;font-weight:800;font-family:'Manrope',sans-serif;cursor:pointer;margin-top:6px;}
-.cal-save-btn:active{opacity:.85;}
-.cal-cancel-link{display:block;text-align:center;font-size:12px;font-weight:600;color:var(--l3);cursor:pointer;padding:12px;font-family:'Manrope',sans-serif;border:none;background:none;width:100%;}
-
-/* Next event pill in header */
-.header-next-event{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--orange-s);border:1px solid var(--orange-b);border-radius:10px;cursor:pointer;max-width:200px;overflow:hidden;}
-.header-next-event-dot{width:5px;height:5px;border-radius:50%;background:var(--orange);flex-shrink:0;}
-.header-next-event-text{font-size:10px;font-weight:700;color:var(--orange);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ══ PRIORITY ══ */
 .priority-sel{display:flex;gap:6px;margin-bottom:10px;}
@@ -619,7 +500,7 @@ mark{background:rgba(255,165,0,.3);color:var(--orange);border-radius:3px;padding
         <div class="header-name"><em style="font-style:normal;opacity:0.45;font-size:13px;">Add Name in Settings</em></div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-        <button class="cal-header-btn" id="calHeaderBtn" onclick="openCalendar()" aria-label="Calendar">
+        <button class="cal-header-btn" id="calHeaderBtn" onclick="openMyCalendar()" aria-label="View My Calendar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
         </button>
         <div class="header-date-right">
@@ -635,7 +516,6 @@ mark{background:rgba(255,165,0,.3);color:var(--orange);border-radius:3px;padding
       </div>
     </div>
     <div class="header-bottom-row">
-      <div id="headerNextEvent" style="display:none"></div>
       <div class="header-pills">
         <div class="pill" id="pillPending">0 left</div>
         <div class="pill" id="pillDone">0 done</div>
@@ -958,7 +838,7 @@ mark{background:rgba(255,165,0,.3);color:var(--orange);border-radius:3px;padding
         <div class="spirit-section-title">Prayer Requests</div>
         <svg class="spirit-chevron" id="chevron-prayer" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="spirit-section-body" id="spirit-prayer">
+      <div class="spirit-section-body" id="spirit-prayer" style="display:none;">
         <div class="prayer-add-row" style="margin:0 0 8px;border-radius:var(--r-md);">
           <input type="text" class="prayer-add-input" id="prayerInput" placeholder="What are you believing God for…" maxlength="300" autocomplete="off">
           <button class="prayer-add-btn" onclick="addPrayer()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
@@ -971,9 +851,9 @@ mark{background:rgba(255,165,0,.3);color:var(--orange);border-radius:3px;padding
       <div class="spirit-section-header" onclick="toggleSpirit('soap')">
         <div class="spirit-section-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
         <div class="spirit-section-title">SOAP Journal</div>
-        <svg class="spirit-chevron open" id="chevron-soap" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg class="spirit-chevron" id="chevron-soap" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="spirit-section-body" id="spirit-soap">
+      <div class="spirit-section-body" id="spirit-soap" style="display:none;">
         <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <div class="soap-badge">S — Scripture</div><div class="soap-badge">O — Observation</div><div class="soap-badge">A — Application</div><div class="soap-badge">P — Prayer</div>
         </div>
@@ -1493,11 +1373,11 @@ const WINS_PAGE_SIZE=90;let _winsShowAll=false;
 function renderWins(){const done=tasks.filter(t=>t.completed);const wbn=el('winsBigNum');if(wbn)wbn.textContent=done.length;const ctx=el('winsContext');if(!done.length)ctx.innerHTML="Keep going —<br><strong>you've got this.</strong>";else if(done.length===1)ctx.innerHTML="You completed<br><strong>1 win</strong> today.";else ctx.innerHTML=`You recorded<br><strong>${done.length} wins</strong> today.`;const allKeys=Object.keys(winsHistory),wrc=el('weeklyRecap');if(allKeys.length>=2){const rk=allKeys.sort().reverse().slice(0,7),wt=rk.reduce((a,k)=>a+(winsHistory[k]?.length||0),0);const bd=rk.reduce((b,k)=>{const c=winsHistory[k]?.length||0;return c>b.count?{date:k,count:c}:b},{date:'',count:0});wrc.innerHTML=`<div class="section-header">Weekly Recap</div><div class="recap-card"><div class="recap-eyebrow">Last ${rk.length} Days</div><div class="recap-grid"><div class="recap-stat"><div class="recap-num">${wt}</div><div class="recap-label">Total wins</div></div><div class="recap-stat"><div class="recap-num">${bestStreak}</div><div class="recap-label">Best streak</div></div>${bd.date?`<div class="recap-wide"><div class="recap-wide-label">Most productive day</div><div class="recap-wide-val">${prettyDate(bd.date)}</div></div>`:''}</div></div>`;}else wrc.innerHTML='';const twc=el('todayWinsCard');if(done.length){twc.innerHTML=`<div class="group-card">${done.map(t=>`<div class="group-row"><div class="row-icon-sq orange"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="row-body"><div class="row-title">${esc(t.text)}</div></div></div>`).join('')}</div>`;}else twc.innerHTML=`<div class="empty"><div class="empty-msg">Complete tasks and they'll appear here.</div></div>`;const hist=el('historySection'),keys=Object.keys(winsHistory).sort().reverse();if(!keys.length){hist.innerHTML='';return;}const visibleKeys=_winsShowAll?keys:keys.slice(0,WINS_PAGE_SIZE);const hasMore=!_winsShowAll&&keys.length>WINS_PAGE_SIZE;hist.innerHTML=`<div class="section-header">Past Wins</div>`+visibleKeys.map(k=>{const items=winsHistory[k];if(!items?.length)return'';return`<div class="history-date-hdr">${prettyDate(k)}</div><div class="group-card">${items.map(i=>`<div class="group-row"><div class="row-icon-sq"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="row-body"><div class="row-title">${esc(i)}</div></div></div>`).join('')}</div>`;}).join('')+(hasMore?`<button onclick="_winsShowAll=true;renderWins();" aria-label="Show all win history" style="width:100%;padding:12px;background:var(--g1);border:1px solid var(--sep2);border-radius:var(--r-md);color:var(--l2);font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;">Show all ${keys.length} days</button>`:'');}
 function updateBadge(){const d=tasks.filter(t=>t.completed).length,b=el('winsBadge');if(!b)return;b.style.display=d?'block':'none';b.textContent=d;}
 function clearWinsBadge(){const b=el('winsBadge');if(b)b.style.display='none';}
-function renderAll(){renderTasks();renderStats();renderProgress();renderHabits();renderConf();renderWins();updateBadge();renderScore();renderStreak();renderLevel();renderMomentum();renderHeaderNextEvent();}
+function renderAll(){renderTasks();renderStats();renderProgress();renderHabits();renderConf();renderWins();updateBadge();renderScore();renderStreak();renderLevel();renderMomentum();}
 function updateFlipClock(){const now=new Date();let h=now.getHours();const m=now.getMinutes(),isPM=h>=12;h=h%12||12;const t=el('digTime'),a=el('digAmpm');if(t)t.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;if(a)a.textContent=isPM?'PM':'AM';}
 function updateHeader(){const now=new Date(),h=now.getHours();let g='Good Morning';if(h>=12&&h<17)g='Good Afternoon';else if(h>=17)g='Good Evening';el('headerGreeting').textContent=g;el('headerBigDate').textContent=now.toLocaleDateString('en-US',{weekday:'long'});el('headerFullDate').textContent=now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});const s=loadSettings(),nameEl=document.querySelector('.header-name');if(nameEl){if(s.name&&s.name.trim()){const parts=s.name.trim().split(' '),first=parts[0],last=parts.slice(1).join(' ');nameEl.innerHTML=last?`${esc(first)} <em>${esc(last)}</em>`:`<em>${esc(first)}</em>`;}else nameEl.innerHTML=`<em style="font-style:normal;opacity:0.45;font-size:13px;">Add Name in Settings</em>`;}}
 function showView(v){const views=['todayView','winsView','voiceView','settingsView','spiritualView'];const btns=['navToday','navWins','navVoice','navSettings','navSpiritual'];views.forEach(id=>{const e=el(id);if(e)e.style.display='none';});btns.forEach(id=>{const e=el(id);if(e)e.classList.remove('active');});if(v==='today'){el('todayView').style.display='block';el('navToday').classList.add('active');}else if(v==='wins'){el('winsView').style.display='block';el('navWins').classList.add('active');renderWins();clearWinsBadge();}else if(v==='voice'){el('voiceView').style.display='block';el('navVoice').classList.add('active');renderFolders();}else if(v==='settings'){el('settingsView').style.display='block';el('navSettings').classList.add('active');renderSettingsView();setTimeout(updateStorageMeter,100);}else if(v==='spiritual'){el('spiritualView').style.display='block';el('navSpiritual').classList.add('active');renderSpiritualPage();}}
-const K_SOAP='sc_soap_v1';const spiritOpen={prayer:true,soap:true,conf:false};
+const K_SOAP='sc_soap_v1';const spiritOpen={prayer:false,soap:false,conf:false};
 function toggleSpirit(s){spiritOpen[s]=!spiritOpen[s];const b=el('spirit-'+s),c=el('chevron-'+s);if(b)b.style.display=spiritOpen[s]?'block':'none';if(c)c.className='spirit-chevron'+(spiritOpen[s]?' open':'');}
 function renderSpiritualPage(){['prayer','soap','conf'].forEach(s=>{const b=el('spirit-'+s),c=el('chevron-'+s);if(b)b.style.display=spiritOpen[s]?'block':'none';if(c)c.className='spirit-chevron'+(spiritOpen[s]?' open':'');});renderPrayers();renderSoapToday();renderSoapHistory();renderConfessionCards();}
 function loadSoap(){try{return JSON.parse(localStorage.getItem(K_SOAP)||'{}');}catch(e){return{};}}
@@ -1505,7 +1385,8 @@ function saveSoap(){const all=loadSoap(),key=todayStr();all[key]={date:key,s:el(
 let _soapTimer;
 function autoSaveSoap(){clearTimeout(_soapTimer);_soapTimer=setTimeout(()=>{const all=loadSoap(),key=todayStr();all[key]={date:key,s:el('soapS')?el('soapS').value:'',o:el('soapO')?el('soapO').value:'',a:el('soapA')?el('soapA').value:'',p:el('soapP')?el('soapP').value:''};localStorage.setItem(K_SOAP,JSON.stringify(all));},1000);}
 function renderSoapToday(){const sc=getDailyItem(SCRIPTURES),ref=el('soapScriptureRef');if(ref)ref.textContent='— '+sc.ref+': "'+sc.text.substring(0,80)+(sc.text.length>80?'…':'')+'"';const dl=el('soapDateLabel');if(dl)dl.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});const all=loadSoap(),today=all[todayStr()];if(today){if(el('soapS'))el('soapS').value=today.s||'';if(el('soapO'))el('soapO').value=today.o||'';if(el('soapA'))el('soapA').value=today.a||'';if(el('soapP'))el('soapP').value=today.p||'';}}
-function renderSoapHistory(){const container=el('soapHistory');if(!container)return;const all=loadSoap(),keys=Object.keys(all).sort().reverse().filter(k=>k!==todayStr());if(!keys.length){container.innerHTML='<div style="margin-top:8px;padding:14px 0;text-align:center;"><div style="font-size:13px;font-weight:600;color:var(--l3);">No past entries yet</div><div style="font-size:11px;color:var(--l4);margin-top:4px;">Write today\'s SOAP above — it will appear here tomorrow</div></div>';return;}container.innerHTML='<div class="section-header" style="padding:12px 2px 8px;">Past Entries ('+(keys.length)+')</div>'+keys.map(k=>{const e=all[k],preview=(e.s||e.o||e.a||e.p||'').substring(0,80);return`<div class="soap-history-entry" onclick="openSoapEntry('${k}')"><div class="soap-history-date">${prettyDate(k)}</div><div class="soap-history-preview">${esc(preview)}${preview.length>=80?'…':''}</div></div>`;}).join('');}
+function renderSoapHistory(){const container=el('soapHistory');if(!container)return;const all=loadSoap(),keys=Object.keys(all).sort().reverse().filter(k=>k!==todayStr());if(!keys.length){container.innerHTML='<div style="margin-top:8px;padding:14px 0;text-align:center;"><div style="font-size:13px;font-weight:600;color:var(--l3);">No past entries yet</div><div style="font-size:11px;color:var(--l4);margin-top:4px;">Write today\'s SOAP above — it will appear here tomorrow</div></div>';return;}container.innerHTML='<div class="section-header" style="padding:12px 2px 8px;">Past Entries ('+(keys.length)+')</div>'+keys.map(k=>{const e=all[k],preview=(e.s||e.o||e.a||e.p||'').substring(0,80);return`<div class="soap-history-entry" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;min-width:0;cursor:pointer;" onclick="openSoapEntry('${k}')"><div class="soap-history-date">${prettyDate(k)}</div><div class="soap-history-preview">${esc(preview)}${preview.length>=80?'…':''}</div></div><button onclick="event.stopPropagation();deleteSoapEntry('${k}')" style="flex-shrink:0;background:none;border:none;color:var(--l3);padding:6px;cursor:pointer;border-radius:8px;transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--l3)'" aria-label="Delete entry"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>`;}).join('');}
+function deleteSoapEntry(key){if(!confirm('Delete SOAP entry for '+prettyDate(key)+'?'))return;const all=loadSoap();delete all[key];localStorage.setItem(K_SOAP,JSON.stringify(all));renderSoapHistory();showToast('Entry deleted');}
 function openSoapEntry(key){const all=loadSoap(),e=all[key];if(!e)return;const lines=['SOAP — '+prettyDate(key),'','S:',e.s||'(empty)','','O:',e.o||'(empty)','','A:',e.a||'(empty)','','P:',e.p||'(empty)'].join('\n');if(navigator.share)navigator.share({title:'SOAP Entry',text:lines}).catch(()=>{});else navigator.clipboard.writeText(lines).then(()=>showToast('Copied to clipboard'));}
 const K_CUSTOM_CONF='sc_custom_conf_v1';
 const CONFESSION_TEXTS=[{text:"I am fearfully and wonderfully made — created with purpose and intention.",ref:"Psalm 139:14"},{text:"I am loved unconditionally by God — nothing I do can change that.",ref:"Romans 8:38-39"},{text:"I am more than a conqueror through Christ who strengthens me.",ref:"Romans 8:37"},{text:"I walk in the abundance of God's grace, favor, and blessing today.",ref:"2 Corinthians 9:8"},{text:"I am called, equipped, and anointed for this season of my life.",ref:"1 Peter 2:9"},{text:"I have not been given a spirit of fear, but of power, love, and a sound mind.",ref:"2 Timothy 1:7"},{text:"I am the righteousness of God in Christ Jesus.",ref:"2 Corinthians 5:21"},{text:"I am complete in Him who is the head of all principality and power.",ref:"Colossians 2:10"},{text:"God's plans for me are good — to give me hope and a future.",ref:"Jeremiah 29:11"},{text:"I am chosen, set apart, and deeply loved by God.",ref:"1 Thessalonians 1:4"},{text:"Nothing can separate me from the love of God.",ref:"Romans 8:38"},{text:"I walk in divine health, wholeness, and peace every day.",ref:"Isaiah 53:5"},];
@@ -1568,7 +1449,7 @@ function toggleAlarmSound(){const current=getAlarmSound();localStorage.setItem(K
 function initAlarmToggle(){const toggle=el('alarmSoundToggle');if(toggle)toggle.className='toggle'+(getAlarmSound()?' on':'');}
 function playAlarmChime(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[[0,660],[0.18,880],[0.36,1100]].forEach(([t,freq])=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0,ctx.currentTime+t);gain.gain.linearRampToValueAtTime(0.18,ctx.currentTime+t+0.05);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.5);osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.55);});}catch(e){}}
 function setRecurType(type){recurType=type;el('recurTypeTask').className='type-pill'+(type==='task'?' active':'');el('recurTypeHabit').className='type-pill'+(type==='habit'?' active':'');}
-function addRecurring(){try{const name=el('recurNameInput')?el('recurNameInput').value.trim():'';if(!name){showToast('Enter a task name');return;}const selectedDays=[];document.querySelectorAll('.day-pill.selected').forEach(b=>{selectedDays.push(parseInt(b.dataset.day));});if(!selectedDays.length){showToast('Select at least one day');return;}const notifyTime=(el('recurNotifyTime')&&el('recurNotifyTime').value)||'08:00';const item={id:Date.now().toString(),name,days:selectedDays,type:recurType,notifyTime};const list=loadRecurring();list.push(item);saveRecurring(list);scheduleRecurringNotifications(item);el('recurNameInput').value='';document.querySelectorAll('.day-pill.selected').forEach(b=>b.classList.remove('selected'));if(el('recurNotifyTime'))el('recurNotifyTime').value='08:00';setRecurType('task');renderRecurringList();injectRecurring();renderAll();renderHeaderNextEvent();showToast('"'+name+'" scheduled');}catch(err){showToast('Error saving — try again');console.error('addRecurring:',err);}}
+function addRecurring(){try{const name=el('recurNameInput')?el('recurNameInput').value.trim():'';if(!name){showToast('Enter a task name');return;}const selectedDays=[];document.querySelectorAll('.day-pill.selected').forEach(b=>{selectedDays.push(parseInt(b.dataset.day));});if(!selectedDays.length){showToast('Select at least one day');return;}const notifyTime=(el('recurNotifyTime')&&el('recurNotifyTime').value)||'08:00';const item={id:Date.now().toString(),name,days:selectedDays,type:recurType,notifyTime};const list=loadRecurring();list.push(item);saveRecurring(list);scheduleRecurringNotifications(item);el('recurNameInput').value='';document.querySelectorAll('.day-pill.selected').forEach(b=>b.classList.remove('selected'));if(el('recurNotifyTime'))el('recurNotifyTime').value='08:00';setRecurType('task');renderRecurringList();injectRecurring();renderAll();showToast('"'+name+'" scheduled');}catch(err){showToast('Error saving — try again');console.error('addRecurring:',err);}}
 function deleteRecurring(id){if(_recurTimeouts[id]){_recurTimeouts[id].forEach(t=>clearTimeout(t));delete _recurTimeouts[id];}saveRecurring(loadRecurring().filter(r=>r.id!==id));tasks=tasks.filter(t=>t.recurId!==id);const habits=getHabits().filter(h=>h.recurId!==id);saveHabitsList(habits);habitState=habitState.slice(0,habits.length);save();renderRecurringList();renderAll();showToast('Recurring item removed');}
 function renderRecurringList(){const container=el('recurringList');if(!container)return;const list=loadRecurring();if(!list.length){container.innerHTML='<div style="font-size:12px;color:var(--l3);padding:8px 0;font-style:italic;">No recurring items yet.</div>';return;}container.innerHTML=list.map(r=>{const dayLabels=r.days.sort((a,b)=>a-b).map(d=>DAY_SHORT[d]).join(', '),timeLabel=r.notifyTime?' · 🔔 '+formatTime12(r.notifyTime):'';return`<div class="recur-item"><div class="recur-item-info"><div class="recur-item-name">${esc(r.name)}</div><div class="recur-item-meta">${dayLabels} · ${r.type==='task'?'My Tasks':'Daily Habits'}${timeLabel}</div></div><button class="recur-item-del" onclick="deleteRecurring('${r.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`;}).join('');}
 function formatTime12(time24){if(!time24)return'';const[h,m]=time24.split(':').map(Number),ampm=h>=12?'PM':'AM',h12=h%12||12;return h12+':'+String(m).padStart(2,'0')+' '+ampm;}
@@ -1647,585 +1528,26 @@ function fireNotification(title,body){
 
 
 /* ══════════════════════════════════════════
-   CALENDAR ENGINE v2
-   - Google Calendar read + WRITE via API
-   - Apple iCal .ics import
-   - Month grid + separate day view
-   - Add events to Google directly
-   - Add any event to My Tasks
+   CALENDAR – Simple "View My Calendar" button
 ══════════════════════════════════════════ */
-const K_CAL        = 'sc_cal_v2';
-const K_GCAL_CFG   = 'sc_gcal_cfg_v2';
-const K_GCAL_TOKEN = 'sc_gcal_token_v2';
-const K_GCAL_EXPIRY = 'sc_gcal_token_expiry_v2';
-// Migrate old 'gcalToken' key to versioned constant
-(function(){try{const oldToken=localStorage.getItem('gcalToken');if(oldToken){localStorage.setItem(K_GCAL_TOKEN,oldToken);localStorage.removeItem('gcalToken');}}catch(e){}})();
-
-function saveGcalToken(token, expiresIn){
-  localStorage.setItem(K_GCAL_TOKEN, token);
-  const expiry = Date.now() + ((expiresIn || 3600) * 1000) - 60000; // subtract 1 min buffer
-  localStorage.setItem(K_GCAL_EXPIRY, expiry.toString());
-  gcalAccessToken = token;
-}
-function isGcalTokenValid(){
-  const token = localStorage.getItem(K_GCAL_TOKEN);
-  const expiry = parseInt(localStorage.getItem(K_GCAL_EXPIRY) || '0');
-  return !!token && Date.now() < expiry;
-}
-function clearGcalToken(){
-  localStorage.removeItem(K_GCAL_TOKEN);
-  localStorage.removeItem(K_GCAL_EXPIRY);
-  gcalAccessToken = null;
-}
-
-const EV_COLORS = ['#E8571A','#2563EB','#16A34A','#7C3AED','#DC2626','#0D9488','#DB2777','#D97706'];
-const MONTHS_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-let calViewYear  = new Date().getFullYear();
-let calViewMonth = new Date().getMonth();
-let calSelectedDate = todayStr();
-let calEditingId    = null;
-let calPickedColor  = EV_COLORS[0];
-let gcalAccessToken = null;
-
-/* ── Storage ── */
-function loadCalEvents(){try{return JSON.parse(localStorage.getItem(K_CAL)||'[]');}catch(e){return[];}}
-function saveCalEvents(a){localStorage.setItem(K_CAL,JSON.stringify(a));}
-function loadGcalCfg(){try{return JSON.parse(localStorage.getItem(K_GCAL_CFG)||'{}');}catch(e){return{};}}
-function saveGcalCfg(c){localStorage.setItem(K_GCAL_CFG,JSON.stringify(c));}
-
-/* ── Open / close ── */
-function openCalendar(){
-  calViewYear=new Date().getFullYear();
-  calViewMonth=new Date().getMonth();
-  calSelectedDate=todayStr();
-  // Restore token from session, or silently re-auth if connected
-  if(!gcalAccessToken||!isGcalTokenValid()){
-    if(isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
-    else{
-      clearGcalToken();
-      const cfg=loadGcalCfg();
-      if(cfg.connected&&cfg.clientId){silentGcalAuth(cfg.clientId);}
-    }
-  }
-  el('calOverlay').classList.add('open');
-  el('calDayOverlay').classList.remove('open');
-  renderCalConnectCards();
-  renderMonthGrid();
-}
-function closeCalendar(){
-  el('calOverlay').classList.remove('open');
-  el('calDayOverlay').classList.remove('open');
-  el('calAddOverlay').classList.remove('open');
-}
-function openDayView(dateStr){
-  calSelectedDate=dateStr;
-  const[y,m,d]=dateStr.split('-').map(Number);
-  const dt=new Date(y,m-1,d);
-  const dayName=dt.toLocaleDateString('en-US',{weekday:'long'});
-  const dateName=dt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  el('calDayTitle').textContent=dayName;
-  el('calDaySubtitle').textContent=dateName;
-  el('calDayOverlay').classList.add('open');
-  renderDayBody(dateStr);
-}
-function closeDayView(){
-  el('calDayOverlay').classList.remove('open');
-}
-
-/* ── Month grid ── */
-function calChangeMonth(dir){
-  calViewMonth+=dir;
-  if(calViewMonth>11){calViewMonth=0;calViewYear++;}
-  if(calViewMonth<0){calViewMonth=11;calViewYear--;}
-  renderMonthGrid();
-}
-function renderMonthGrid(){
-  const label=MONTHS_LONG[calViewMonth]+' '+calViewYear;
-  if(el('calMonthLabel'))el('calMonthLabel').textContent=label;
-  const evs=loadCalEvents();
-  const today=todayStr();
-  const firstDay=new Date(calViewYear,calViewMonth,1).getDay();
-  const daysInMonth=new Date(calViewYear,calViewMonth+1,0).getDate();
-  const daysInPrev=new Date(calViewYear,calViewMonth,0).getDate();
-  let cells=[];
-  for(let i=firstDay-1;i>=0;i--){
-    const m=calViewMonth===0?11:calViewMonth-1,y=calViewMonth===0?calViewYear-1:calViewYear;
-    cells.push({day:daysInPrev-i,month:m,year:y,other:true});
-  }
-  for(let d=1;d<=daysInMonth;d++)cells.push({day:d,month:calViewMonth,year:calViewYear,other:false});
-  const rem=42-cells.length;
-  for(let d=1;d<=rem;d++){
-    const m=calViewMonth===11?0:calViewMonth+1,y=calViewMonth===11?calViewYear+1:calViewYear;
-    cells.push({day:d,month:m,year:y,other:true});
-  }
-  const grid=el('calDaysGrid');if(!grid)return;
-  grid.innerHTML=cells.map(cell=>{
-    const ds=`${cell.year}-${String(cell.month+1).padStart(2,'0')}-${String(cell.day).padStart(2,'0')}`;
-    const isToday=ds===today;
-    const dayEvs=evs.filter(e=>e.date===ds).slice(0,3);
-    const dots=dayEvs.map(e=>`<div class="cal-dot" style="background:${e.color||'var(--orange)'}"></div>`).join('');
-    return`<div class="cal-day${cell.other?' other-month':''}${isToday?' today':''}" onclick="openDayView('${ds}')">
-      <div class="cal-day-num">${cell.day}</div>
-      ${dots?`<div class="cal-day-dots">${dots}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-/* ── Day body ── */
-function renderDayBody(dateStr){
-  const body=el('calDayBody');if(!body)return;
-  const evs=loadCalEvents().filter(e=>e.date===dateStr);
-  // Also show pending tasks as all-day items for today
-  const isToday=dateStr===todayStr();
-  const taskItems=isToday?tasks.filter(t=>!t.completed).map(t=>({
-    id:'task-'+t.id,title:t.text,allDay:true,color:'var(--orange)',isTask:true
-  })):[];
-  const sorted=[...evs.sort((a,b)=>{
-    if(a.allDay&&!b.allDay)return-1;if(!a.allDay&&b.allDay)return 1;
-    return(a.start||'').localeCompare(b.start||'');
-  }),...taskItems];
-
-  if(!sorted.length){
-    body.innerHTML=`<div class="cal-day-empty">
-      No events scheduled.<br>
-      <span style="color:var(--orange);font-weight:700;cursor:pointer;" onclick="openAddEvent()">Tap New Event to add one →</span>
-    </div>`;
-    return;
-  }
-  body.innerHTML=sorted.map(ev=>{
-    const timeLabel=ev.allDay?'ALL DAY':(ev.start?fmtTime12(ev.start):'');
-    const endLabel=(!ev.allDay&&ev.end)?' – '+fmtTime12(ev.end):'';
-    const color=ev.color||'var(--orange)';
-    const isGcal=ev.fromGcal;
-    const safeId=esc(String(ev.id)).replace(/'/g,'&#39;');
-    const actions=!ev.isTask?`
-      <button class="cal-ev-action-btn cal-ev-add-task" onclick="addEventToTasks('${safeId}');event.stopPropagation()">+ My Tasks</button>
-      ${!isGcal?`<button class="cal-ev-action-btn cal-ev-delete" onclick="deleteLocalEvent('${safeId}');event.stopPropagation()">Delete</button>`:''}
-    `:``;
-    return`<div class="cal-ev-card" style="border-left-color:${esc(color)}">
-      <div class="cal-ev-time-col"><div class="cal-ev-time" style="color:${color}">${timeLabel}${endLabel}</div></div>
-      <div class="cal-ev-body">
-        <div class="cal-ev-title">${esc(ev.title)}</div>
-        ${ev.notes?`<div class="cal-ev-sub">${esc(ev.notes)}</div>`:''}
-        ${ev.fromGcal?`<div class="cal-ev-sub" style="color:var(--orange);margin-top:3px;">Google Calendar</div>`:''}
-        ${ev.fromIcs?`<div class="cal-ev-sub" style="margin-top:3px;">iCal Import</div>`:''}
-      </div>
-      ${actions?`<div class="cal-ev-actions">${actions}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-function fmtTime12(t){
-  if(!t)return'';
-  const[h,m]=t.split(':').map(Number),ampm=h>=12?'PM':'AM';
-  return(h%12||12)+(m?':'+String(m).padStart(2,'0'):'')+' '+ampm;
-}
-
-/* ── Add event to My Tasks ── */
-function addEventToTasks(evId){
-  const ev=loadCalEvents().find(e=>e.id===evId);
-  if(!ev)return;
-  const timeNote=ev.allDay?'':(ev.start?' at '+fmtTime12(ev.start):'');
-  const task={id:Date.now(),text:ev.title+timeNote,completed:false,createdAt:new Date().toISOString(),deadline:null};
-  tasks.unshift(task);save();renderTasks();renderStats();renderProgress();updateBadge();renderScore();renderMomentum();
-  showToast('"'+ev.title+'" added to My Tasks');
-}
-
-/* ── Delete local event ── */
-function deleteLocalEvent(id){
-  saveCalEvents(loadCalEvents().filter(e=>e.id!==id));
-  renderDayBody(calSelectedDate);
-  renderMonthGrid();
-  showToast('Event removed');
-}
-
-/* ── Header next event pill ── */
-function renderHeaderNextEvent(){
-  const pill=el('headerNextEvent');if(!pill)return;
-  const now=new Date();
-  const upcoming=loadCalEvents()
-    .filter(e=>e.date===todayStr()&&!e.allDay&&e.start)
-    .sort((a,b)=>a.start.localeCompare(b.start))
-    .find(e=>{const[h,m]=e.start.split(':').map(Number),t=new Date();t.setHours(h,m,0,0);return t>now;});
-  const btn=el('calHeaderBtn');
-  if(upcoming){
-    pill.style.display='flex';
-    pill.innerHTML=`<div class="header-next-event" onclick="openCalendar()">
-      <div class="header-next-event-dot"></div>
-      <div class="header-next-event-text">Next: ${esc(upcoming.title)} at ${fmtTime12(upcoming.start)}</div>
-    </div>`;
-    if(btn)btn.classList.add('has-events');
-  }else{
-    pill.style.display='none';
-    if(btn)btn.classList.remove('has-events');
-  }
-}
-
-/* ══ GOOGLE CALENDAR ══ */
-const GCAL_SCOPE='https://www.googleapis.com/auth/calendar';
-
-function renderCalConnectCards(){
-  const cfg=loadGcalCfg();
-  const btn=el('gcalConnBtn'),sub=el('gcalSubLabel');
-  if(cfg.connected&&cfg.email){
-    if(btn){btn.textContent='Disconnect';btn.className='cal-connect-btn connected';btn.onclick=disconnectGcal;}
-    if(sub)sub.textContent=cfg.email;
-  }else{
-    if(btn){btn.textContent='Connect';btn.className='cal-connect-btn';btn.onclick=handleGcalConnect;}
-    if(sub)sub.textContent='Connect to sync & create events';
-  }
-  const status=el('calSyncStatus');
-  if(status){
-    const evCount=loadCalEvents().filter(e=>e.fromGcal).length;
-    status.textContent=cfg.connected?`Synced ${evCount} Google events — tap a day to view`:'Tap a day to view schedule';
-  }
-}
-
-function handleGcalConnect(){
-  const cfg=loadGcalCfg();
-  if(cfg.clientId&&cfg.clientId.trim()){
-    startGcalAuth(cfg.clientId.trim());
-    return;
-  }
-  showGcalSetup();
-}
-
-function showGcalSetup(){
-  if(el('gcalSetupCard')){el('gcalSetupCard').remove();return;}
-  const card=document.createElement('div');
-  card.id='gcalSetupCard';
-  card.className='cal-setup-card';
-  card.innerHTML=`
-    <div class="cal-setup-title">Google Calendar Setup</div>
-    <div class="cal-setup-steps">
-      1. Go to <strong>console.cloud.google.com</strong><br>
-      2. New project → Enable <strong>Google Calendar API</strong><br>
-      3. OAuth Consent Screen → External → Add your email as test user<br>
-      4. Credentials → Create → OAuth 2.0 Client ID → Web app<br>
-      5. Add your Netlify URL to <strong>Authorized JS Origins</strong><br>
-      6. Paste your Client ID below
-    </div>
-    <input class="cal-setup-input" id="gcalClientInput" placeholder="xxxxxxxx.apps.googleusercontent.com">
-    <div class="cal-setup-btns">
-      <button class="cal-setup-save" onclick="saveGcalClientId()">Connect</button>
-      <button class="cal-setup-cancel" onclick="el('gcalSetupCard').remove()">Cancel</button>
-    </div>
-  `;
-  const gcalCard=el('gcalCard');
-  if(gcalCard)gcalCard.after(card);
-  setTimeout(()=>{const inp=el('gcalClientInput');if(inp)inp.focus();},100);
-}
-
-function saveGcalClientId(){
-  const inp=el('gcalClientInput');
-  if(!inp||!inp.value.trim()){showToast('Paste your Client ID first');return;}
-  const cfg=loadGcalCfg();cfg.clientId=inp.value.trim();saveGcalCfg(cfg);
-  const card=el('gcalSetupCard');if(card)card.remove();
-  startGcalAuth(cfg.clientId);
-}
-
-function startGcalAuth(clientId){
-  const btn=el('gcalConnBtn');
-  if(btn){btn.textContent='Signing in…';btn.className='cal-connect-btn syncing';}
-  if(window.google&&window.google.accounts){initTokenClient(clientId);return;}
-  const s=document.createElement('script');
-  s.src='https://accounts.google.com/gsi/client';
-  s.onload=()=>initTokenClient(clientId);
-  s.onerror=()=>{showToast('Could not load Google Sign-In');renderCalConnectCards();};
-  document.head.appendChild(s);
-}
-
-function initTokenClient(clientId){
+function openMyCalendar(){
+  // Try to open device calendar; fallback to Google Calendar web
+  const urls=['webcal://','content://com.android.calendar','calshow://'];
+  let opened=false;
   try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:clientId,
-      scope:GCAL_SCOPE+' email profile',
-      callback:async(resp)=>{
-        if(resp.error){showToast('Google auth failed: '+resp.error);renderCalConnectCards();return;}
-        saveGcalToken(resp.access_token, resp.expires_in);
-        await syncGcalEvents(resp.access_token);
-      }
-    });
-    tc.requestAccessToken({prompt:'consent'});
-  }catch(e){showToast('Auth error — check your Client ID');renderCalConnectCards();}
+    // iOS: calshow:// opens Apple Calendar
+    // Android: content://com.android.calendar
+    // Fallback: Google Calendar web
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid=/Android/.test(navigator.userAgent);
+    if(isIOS){window.location.href='calshow://';opened=true;}
+    else if(isAndroid){window.location.href='content://com.android.calendar/time/';opened=true;}
+    else{window.open('https://calendar.google.com','_blank');opened=true;}
+  }catch(e){window.open('https://calendar.google.com','_blank');}
+  if(!opened)window.open('https://calendar.google.com','_blank');
 }
-
-async function syncGcalEvents(token){
-  const statusEl=el('calSyncStatus');
-  if(statusEl)statusEl.textContent='Syncing…';
-  try{
-    // Get profile
-    const prof=await(await fetch('https://www.googleapis.com/oauth2/v2/userinfo',
-      {headers:{Authorization:'Bearer '+token}})).json();
-    // Get events — next 90 days
-    const now=new Date().toISOString();
-    const future=new Date(Date.now()+90*86400000).toISOString();
-    const data=await(await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(now)}&timeMax=${encodeURIComponent(future)}&singleEvents=true&orderBy=startTime&maxResults=500`,
-      {headers:{Authorization:'Bearer '+token}}
-    )).json();
-
-    const gcalEvs=(data.items||[]).map(item=>{
-      const allDay=!!item.start.date;
-      const dateStr=allDay?item.start.date:item.start.dateTime.substring(0,10);
-      const start=allDay?'':item.start.dateTime.substring(11,16);
-      const end=allDay?'':(item.end&&item.end.dateTime?item.end.dateTime.substring(11,16):'');
-      return{id:'gcal-'+item.id,gcalId:item.id,title:item.summary||'(No title)',
-        notes:(item.location||item.description||'').substring(0,150),
-        date:dateStr,start,end,allDay,color:'#2563EB',fromGcal:true};
-    });
-
-    const local=loadCalEvents().filter(e=>!e.fromGcal);
-    saveCalEvents([...local,...gcalEvs]);
-
-    const cfg=loadGcalCfg();cfg.connected=true;cfg.email=prof.email||'';saveGcalCfg(cfg);
-    gcalAccessToken=token;
-    renderCalConnectCards();renderMonthGrid();renderHeaderNextEvent();
-    showToast(`Synced ${gcalEvs.length} events from Google`);
-  }catch(e){
-    console.error('syncGcalEvents failed:', e);
-    showToast('Sync failed — try reconnecting');
-    renderCalConnectCards();
-  }
-}
-
-/* ── Create event in Google Calendar ── */
-async function createGcalEvent(ev){
-  if(!gcalAccessToken){showToast('Reconnect Google Calendar to sync');return false;}
-  try{
-    const allDay=ev.allDay||!ev.start;
-    const body={
-      summary:ev.title,
-      description:ev.notes||'',
-      start:allDay?{date:ev.date}:{dateTime:`${ev.date}T${ev.start}:00`,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
-      end:allDay?{date:incrementDay(ev.date)}:{dateTime:`${ev.date}T${(ev.end||ev.start)}:00`,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
-    };
-    const res=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
-      method:'POST',
-      headers:{Authorization:'Bearer '+gcalAccessToken,'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-    if(!res.ok){
-      const err=await res.json();
-      if(err.error&&err.error.code===401){gcalAccessToken=null;showToast('Session expired — reconnect Google');return false;}
-      showToast('Google error: '+( err.error&&err.error.message||res.status));
-      return false;
-    }
-    const created=await res.json();
-    // Update local event with gcal id
-    const evs=loadCalEvents();
-    const idx=evs.findIndex(e=>e.id===ev.id);
-    if(idx!==-1){evs[idx].fromGcal=true;evs[idx].gcalId=created.id;evs[idx].color='#2563EB';saveCalEvents(evs);}
-    return true;
-  }catch(e){showToast('Could not reach Google Calendar');return false;}
-}
-
-function incrementDay(dateStr){
-  const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+1);
-  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function disconnectGcal(){
-  if(!confirm('Disconnect Google Calendar? Synced events will be removed.'))return;
-  saveCalEvents(loadCalEvents().filter(e=>!e.fromGcal));
-  const cfg=loadGcalCfg();cfg.connected=false;cfg.email='';saveGcalCfg(cfg);
-  clearGcalToken();
-  renderCalConnectCards();renderMonthGrid();showToast('Disconnected from Google');
-}
-
-/* ══ ADD EVENT SHEET ══ */
-function openAddEvent(){
-  calEditingId=null;
-  el('calAddSheetTitle').textContent='New Event';
-  el('calEvTitle').value='';
-  el('calEvNotes').value='';
-  el('calEvDate').value=calSelectedDate;
-  el('calEvStart').value='';
-  el('calEvEnd').value='';
-  el('calEvAllDay').value='0';
-  calPickedColor=EV_COLORS[0];
-  renderColorPicker();
-  // Restore token from session or re-auth if expired
-  if(!gcalAccessToken&&isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
-  else if(!isGcalTokenValid()){clearGcalToken();}
-  const cfg=loadGcalCfg();
-  // If connected but no token, silently re-auth before opening
-  if(cfg.connected&&cfg.clientId&&!gcalAccessToken){
-    el('calAddSource').textContent='Reconnecting…';
-    el('calAddSource').style.background='var(--orange-s)';
-    el('calAddSource').style.color='var(--orange)';
-    el('calAddOverlay').classList.add('open');
-    setTimeout(()=>el('calEvTitle').focus(),100);
-    silentGcalAuth(cfg.clientId);
-    updateGcalLink();
-    return;
-  }
-  updateGcalLink();
-  const willSync=cfg.connected&&!!gcalAccessToken;
-  el('calAddSource').textContent=willSync?'→ Google Calendar':'Local Only';
-  el('calAddSource').style.background=willSync?'rgba(37,99,235,0.15)':'var(--orange-s)';
-  el('calAddSource').style.color=willSync?'#2563EB':'var(--orange)';
-  el('calAddOverlay').classList.add('open');
-  setTimeout(()=>el('calEvTitle').focus(),100);
-}
-
-function silentGcalAuth(clientId){
-  if(!window.google||!window.google.accounts){
-    const s=document.createElement('script');
-    s.src='https://accounts.google.com/gsi/client';
-    s.onload=()=>doSilentAuth(clientId);
-    document.head.appendChild(s);
-  } else {
-    doSilentAuth(clientId);
-  }
-}
-
-function doSilentAuth(clientId){
-  try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:clientId,
-      scope:GCAL_SCOPE+' email profile',
-      callback:(resp)=>{
-        if(resp.error||!resp.access_token)return;
-        saveGcalToken(resp.access_token, resp.expires_in);
-        // Update the badge now that we have a token
-        const src=el('calAddSource');
-        if(src){src.textContent='→ Google Calendar';src.style.background='rgba(37,99,235,0.15)';src.style.color='#2563EB';}
-        updateGcalLink();
-      }
-    });
-    // prompt:'' means no UI shown - uses existing Google session
-    tc.requestAccessToken({prompt:''});
-  }catch(e){
-    // If silent auth fails, user needs to reconnect manually
-    const src=el('calAddSource');
-    if(src){src.textContent='Local Only';src.style.background='var(--orange-s)';src.style.color='var(--orange)';}
-  }
-}
-
-function closeAddEvent(){el('calAddOverlay').classList.remove('open');calEditingId=null;}
-function calAddBgTap(e){if(e.target===el('calAddOverlay'))closeAddEvent();}
-
-function renderColorPicker(){
-  const wrap=el('calEvColors');if(!wrap)return;
-  wrap.innerHTML=EV_COLORS.map(c=>`<div class="cal-ev-swatch ${c===calPickedColor?'sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('');
-}
-function pickColor(c){calPickedColor=c;renderColorPicker();updateGcalLink();}
-
-function updateGcalLink(){
-  const linkDiv=el('calGcalLink');if(!linkDiv)return;
-  const title=el('calEvTitle')?el('calEvTitle').value.trim():'';
-  const date=el('calEvDate')?el('calEvDate').value:'';
-  const cfg=loadGcalCfg();
-  const _tok=gcalAccessToken||(isGcalTokenValid()&&localStorage.getItem(K_GCAL_TOKEN));
-  if(cfg.connected&&_tok){
-    linkDiv.innerHTML=`<span style="color:#2563EB;font-size:11px;font-weight:700;">✓ Will save directly to Google Calendar</span>`;
-    return;
-  }
-  if(!title||!date){linkDiv.innerHTML='';return;}
-  const start=el('calEvStart')&&el('calEvStart').value?el('calEvStart').value:'';
-  const end=el('calEvEnd')&&el('calEvEnd').value?el('calEvEnd').value:'';
-  const allDay=el('calEvAllDay')&&el('calEvAllDay').value==='1';
-  let dates;
-  if(allDay||!start){const d=date.replace(/-/g,'');const n=incrementDay(date).replace(/-/g,'');dates=`${d}/${n}`;}
-  else{const s=date.replace(/-/g,'')+'T'+start.replace(':','')+'00';const e2=end?date.replace(/-/g,'')+'T'+end.replace(':','')+'00':s;dates=`${s}/${e2}`;}
-  const notesVal=el('calEvNotes')?el('calEvNotes').value.trim():'';
-  const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+encodeURIComponent(dates)+(notesVal?'&details='+encodeURIComponent(notesVal):'');
-  // Build the link using DOM methods to avoid XSS through innerHTML
-  linkDiv.innerHTML='';
-  const a=document.createElement('a');
-  a.href=url;
-  a.target='_blank';
-  a.rel='noopener noreferrer';
-  a.className='cal-gcal-link';
-  a.style.cssText='color:var(--orange);font-weight:700;display:inline-flex;align-items:center;gap:4px;';
-  a.setAttribute('aria-label','Open in Google Calendar');
-  a.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open in Google Calendar';
-  linkDiv.appendChild(a);
-}
-
-async function saveCalEvent(){
-  const title=el('calEvTitle').value.trim();
-  if(!title){showToast('Add a title first');return;}
-  const ev={
-    id:calEditingId||Date.now().toString(),
-    title,
-    notes:el('calEvNotes').value.trim(),
-    date:el('calEvDate').value||calSelectedDate,
-    start:el('calEvStart').value||'',
-    end:el('calEvEnd').value||'',
-    allDay:el('calEvAllDay').value==='1',
-    color:calPickedColor,
-  };
-  // Save locally first
-  const evs=loadCalEvents();
-  if(calEditingId){const i=evs.findIndex(e=>e.id===calEditingId);if(i!==-1)evs[i]=ev;else evs.push(ev);}
-  else evs.push(ev);
-  saveCalEvents(evs);
-  closeAddEvent();
-  renderMonthGrid();
-  renderDayBody(ev.date);
-  renderHeaderNextEvent();
-  // Try to push to Google
-  const cfg=loadGcalCfg();
-  if(!gcalAccessToken&&isGcalTokenValid()){gcalAccessToken=localStorage.getItem(K_GCAL_TOKEN);}
-  if(cfg.connected&&gcalAccessToken&&isGcalTokenValid()){
-    el('calSyncStatus').textContent='Saving to Google…';
-    const ok=await createGcalEvent(ev);
-    if(ok){showToast('Event saved to Google Calendar ✓');}
-    else{showToast('Saved locally — reconnect Google to sync');}
-    renderMonthGrid();
-  }else{
-    showToast('Event saved');
-  }
-}
-
-/* ══ ICS IMPORT ══ */
-function triggerIcsImport(){el('icsFileInput').click();}
-function calDragOver(e){e.preventDefault();el('icsDropZone').classList.add('drag');}
-function calDragLeave(){el('icsDropZone').classList.remove('drag');}
-function calDrop(e){e.preventDefault();el('icsDropZone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f){if(f.size>5*1024*1024){showToast('File too large — max 5MB');return;}parseIcsFile(f);}}
-function handleIcsFile(e){const f=e.target.files[0];if(f){if(f.size>5*1024*1024){showToast('File too large — max 5MB');e.target.value='';return;}parseIcsFile(f);}e.target.value='';}
-function parseIcsFile(file){
-  const r=new FileReader();
-  r.onload=(e)=>{
-    try{
-      const evs=parseIcs(e.target.result);
-      const existing=loadCalEvents().filter(ev=>!ev.fromIcs);
-      const _seen=new Set(existing.map(ev=>ev.title+'|'+ev.start));const _deduped=evs.filter(ev=>!_seen.has(ev.title+'|'+ev.start));saveCalEvents([...existing,..._deduped]);
-      renderMonthGrid();
-      renderCalConnectCards();
-      showToast(`Imported ${evs.length} events from ${file.name}`);
-      const sub=el('icsSubLabel');
-      if(sub)sub.textContent=`${evs.length} events imported`;
-    }catch(err){showToast('Could not read .ics file');}
-  };
-  r.readAsText(file);
-}
-function parseIcs(text){
-  const events=[];const blocks=text.split('BEGIN:VEVENT');
-  for(let i=1;i<blocks.length;i++){
-    const b=blocks[i];
-    const get=(key)=>{const rx=new RegExp(key+'(?:;[^:]*)?:([^\\r\\n]+)','i');const m=b.match(rx);return m?m[1].trim():'';}
-    const title=get('SUMMARY').replace(/\\n/g,' ').replace(/\\,/g,',')||'(No title)';
-    const loc=get('LOCATION').replace(/\\n/g,' ');
-    const dtstart=get('DTSTART');if(!dtstart)continue;
-    let dateStr,start='',end='',allDay=false;
-    if(dtstart.length===8){
-      allDay=true;dateStr=`${dtstart.substring(0,4)}-${dtstart.substring(4,6)}-${dtstart.substring(6,8)}`;
-    }else{
-      const d=dtstart.replace(/Z$/,'').replace('T',' ');
-      dateStr=`${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}`;
-      start=`${d.substring(9,11)}:${d.substring(11,13)}`;
-      const dtend=get('DTEND');
-      if(dtend&&dtend.length>=15){const e2=dtend.replace(/Z$/,'');end=`${e2.substring(9,11)}:${e2.substring(11,13)}`;}
-    }
-    events.push({id:'ics-'+Date.now()+'-'+i,title,notes:loc,date:dateStr,start,end,allDay,color:'#7C3AED',fromIcs:true});
-  }
-  return events;
-}
+/* Legacy calendar storage cleanup */
+(function(){try{['sc_cal_v2','sc_gcal_cfg_v2','sc_gcal_token_v2','sc_gcal_token_expiry_v2'].forEach(k=>localStorage.removeItem(k));}catch(e){}})();
 function init(){
   load();updateStreak();checkReset();updateHeader();updateFlipClock();
   let _lastClockMin=-1;function clockTick(){const now=new Date(),m=now.getMinutes();if(m!==_lastClockMin){updateFlipClock();updateHeader();_lastClockMin=m;}const msUntilNextMin=(60-now.getSeconds())*1000-now.getMilliseconds()+50;setTimeout(clockTick,Math.min(Math.max(msUntilNextMin,500),61000));}clockTick();
@@ -2241,7 +1563,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 /* ══ STORAGE MANAGEMENT ══ */
 function getStorageBytes(){let t=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v===null)continue;t+=(k.length+v.length)*2;}return t;}
 function updateStorageMeter(){const used=getStorageBytes(),MAX=5*1024*1024,pct=Math.min(100,(used/MAX)*100);const usedKB=(used/1024).toFixed(0),label=el('storageLabel'),bar=el('storageBar'),detail=el('storageDetail');if(!label)return;label.textContent=usedKB+'KB / 5MB';bar.style.width=pct+'%';bar.style.background=pct>75?'#ef4444':pct>50?'#f59e0b':'var(--orange)';detail.textContent='~'+pct.toFixed(1)+'% used · Auto-cleanup runs on app open';if(pct>80)label.style.color='#ef4444';else if(pct>60)label.style.color='#f59e0b';else label.style.color='var(--orange)';}
-function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPad v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),calendarEvents:safeJsonParse(localStorage.getItem(K_CAL),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
+function exportAllData(){const data={exportedAt:new Date().toISOString(),appVersion:'MyDay iPad v2',tasks:safeJsonParse(localStorage.getItem(K.TASKS),[]),winsHistory:safeJsonParse(localStorage.getItem(K.WINS),{}),soap:safeJsonParse(localStorage.getItem(K_SOAP),{}),thoughts:safeJsonParse(localStorage.getItem(VOICE_KEY),[]),prayers:safeJsonParse(localStorage.getItem(K_PRAYERS),[]),notes:safeJsonParse(localStorage.getItem(K.NOTES),{}),gratitude:safeJsonParse(localStorage.getItem(K.GRAT),null),recurring:safeJsonParse(localStorage.getItem(K_RECURRING),[]),settings:safeJsonParse(localStorage.getItem(K_SETTINGS),{}),streak:safeJsonParse(localStorage.getItem(K.STREAK),{})};const json=JSON.stringify(data,null,2),d=new Date().toISOString().slice(0,10),filename='myday-backup-'+d+'.json';if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([json],'test.json',{type:'application/json'})]})){const file=new File([json],filename,{type:'application/json'});navigator.share({files:[file],title:'MyDay Backup'}).then(()=>showToast('Backup shared — save to Files')).catch(()=>{});}else if(navigator.share){navigator.share({title:'MyDay Backup '+d,text:json}).catch(()=>{});showToast('Copy the text and save it somewhere safe');}else{const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);showToast('Backup downloaded');}}
 function triggerImportData(){el('importFileInput').click();}
 function handleImportFile(e){
   const f=e.target.files[0];if(!f)return;
@@ -2261,7 +1583,6 @@ function handleImportFile(e){
       if(data.notes)localStorage.setItem(K.NOTES,JSON.stringify(data.notes));
       if(data.gratitude)localStorage.setItem(K.GRAT,JSON.stringify(data.gratitude));
       if(data.recurring)localStorage.setItem(K_RECURRING,JSON.stringify(data.recurring));
-      if(data.calendarEvents)localStorage.setItem(K_CAL,JSON.stringify(data.calendarEvents));
       if(data.settings){const cur=loadSettings();const merged={...cur,...data.settings};saveSettingsData(merged);applySettingsToDOM(merged);}
       if(data.streak)localStorage.setItem(K.STREAK,JSON.stringify(data.streak));
       load();renderAll();renderPrayers();renderSettingsView();
@@ -2270,7 +1591,7 @@ function handleImportFile(e){
   };
   r.readAsText(f);
 }
-function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=safeJsonParse(localStorage.getItem(K.TASKS),[]),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const cutoff90date=new Date(now-(90*86400*1000)).toISOString().slice(0,10),evts=safeJsonParse(localStorage.getItem(K_CAL),[]),prunedEvts=evts.filter(e=>!e.date||e.date>=cutoff90date);if(prunedEvts.length<evts.length)localStorage.setItem(K_CAL,JSON.stringify(prunedEvts));const thoughts=safeJsonParse(localStorage.getItem(VOICE_KEY),[]);if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
+function autoPruneData(){const now=Date.now(),cutoff60=now-(60*86400*1000);const allTasks=safeJsonParse(localStorage.getItem(K.TASKS),[]),prunedTasks=allTasks.filter(t=>!t.completed||!t.completedAt||new Date(t.completedAt).getTime()>cutoff60);if(prunedTasks.length<allTasks.length){localStorage.setItem(K.TASKS,JSON.stringify(prunedTasks));}const thoughts=safeJsonParse(localStorage.getItem(VOICE_KEY),[]);if(thoughts.length>300)localStorage.setItem(VOICE_KEY,JSON.stringify(thoughts.slice(-300)));const used=getStorageBytes();if(used>5*1024*1024*0.75)setTimeout(()=>showToast('⚠️ Storage is 75% full — export a backup in Settings'),3000);}
 
 
 // Refresh app state when returning from background (iOS)
@@ -2612,150 +1933,6 @@ function initDailyReminder(){
 document.addEventListener('DOMContentLoaded',initDailyReminder);
 
 </script>
-
-<!-- ══ CALENDAR MAIN OVERLAY (Month + Connections) ══ -->
-<div class="cal-overlay" id="calOverlay">
-  <div class="cal-topbar">
-    <div>
-      <div class="cal-topbar-title">Calendar</div>
-      <div class="cal-topbar-sub" id="calSyncStatus">Tap a day to view schedule</div>
-    </div>
-    <div class="cal-topbar-actions">
-      <button class="cal-close-btn" onclick="closeCalendar()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-  <div class="cal-body">
-    <!-- Connect section -->
-    <div class="cal-connect-section">
-      <div class="cal-connect-card" id="gcalCard">
-        <div class="cal-connect-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
-        </div>
-        <div class="cal-connect-body">
-          <div class="cal-connect-name">Google Calendar</div>
-          <div class="cal-connect-sub" id="gcalSubLabel">Connect to sync & create events</div>
-        </div>
-        <button class="cal-connect-btn" id="gcalConnBtn" onclick="handleGcalConnect()">Connect</button>
-      </div>
-      <div class="cal-connect-card" id="icsCard">
-        <div class="cal-connect-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        </div>
-        <div class="cal-connect-body">
-          <div class="cal-connect-name">Apple / iCal Import</div>
-          <div class="cal-connect-sub" id="icsSubLabel">Import .ics file from any calendar app</div>
-        </div>
-        <button class="cal-connect-btn" onclick="triggerIcsImport()">Import</button>
-      </div>
-    </div>
-    <input type="file" id="icsFileInput" accept=".ics" style="display:none" onchange="handleIcsFile(event)">
-
-    <!-- Month nav -->
-    <div class="cal-month-nav">
-      <button class="cal-nav-btn" onclick="calChangeMonth(-1)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="cal-month-label" id="calMonthLabel">March 2025</div>
-      <button class="cal-nav-btn" onclick="calChangeMonth(1)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="cal-grid-wrap">
-      <div class="cal-dow-row">
-        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
-        <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div>
-        <div class="cal-dow">Sat</div>
-      </div>
-      <div class="cal-days" id="calDaysGrid"></div>
-    </div>
-
-    <!-- ICS drop zone -->
-    <div class="cal-import-zone" id="icsDropZone" onclick="triggerIcsImport()"
-      ondragover="calDragOver(event)" ondrop="calDrop(event)" ondragleave="calDragLeave(event)">
-      <div class="cal-import-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </div>
-      <div class="cal-import-label">Import .ics / iCal file</div>
-      <div class="cal-import-sub">Apple Calendar · Outlook · Any app that exports .ics</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ CALENDAR DAY VIEW (slides over main cal) ══ -->
-<div class="cal-day-overlay" id="calDayOverlay">
-  <div class="cal-topbar">
-    <div class="cal-topbar-left">
-      <button class="cal-back-btn" onclick="closeDayView()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div>
-        <div class="cal-topbar-title" id="calDayTitle">Monday</div>
-        <div class="cal-topbar-sub" id="calDaySubtitle">March 28</div>
-      </div>
-    </div>
-    <div class="cal-topbar-actions">
-      <button class="cal-add-btn" onclick="openAddEvent()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Event
-      </button>
-      <button class="cal-close-btn" onclick="closeCalendar()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-  <div class="cal-day-body" id="calDayBody"></div>
-</div>
-
-<!-- ══ ADD / EDIT EVENT SHEET ══ -->
-<div class="cal-add-overlay" id="calAddOverlay" onclick="calAddBgTap(event)">
-  <div class="cal-add-sheet">
-    <div class="cal-add-handle"></div>
-    <div class="cal-add-title-row">
-      <div class="cal-add-title" id="calAddSheetTitle">New Event</div>
-      <div class="cal-add-source" id="calAddSource">Local</div>
-    </div>
-    <div class="cal-field">
-      <div class="cal-field-label">Title</div>
-      <input id="calEvTitle" placeholder="What's happening?" maxlength="120" autocomplete="off" oninput="updateGcalLink()">
-    </div>
-    <div class="cal-field">
-      <div class="cal-field-label">Location / Notes</div>
-      <input id="calEvNotes" placeholder="Location, link, or details…" maxlength="200" oninput="updateGcalLink()">
-    </div>
-    <div class="cal-field-row">
-      <div class="cal-field">
-        <div class="cal-field-label">Date</div>
-        <input type="date" id="calEvDate" style="color-scheme:dark;" onchange="updateGcalLink()">
-      </div>
-      <div class="cal-field">
-        <div class="cal-field-label">All Day?</div>
-        <select id="calEvAllDay" onchange="updateGcalLink()">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-    </div>
-    <div class="cal-field-row">
-      <div class="cal-field">
-        <div class="cal-field-label">Start</div>
-        <input type="time" id="calEvStart" style="color-scheme:dark;" onchange="updateGcalLink()">
-      </div>
-      <div class="cal-field">
-        <div class="cal-field-label">End</div>
-        <input type="time" id="calEvEnd" style="color-scheme:dark;" onchange="updateGcalLink()">
-      </div>
-    </div>
-    <div class="cal-field">
-      <div class="cal-field-label">Color</div>
-      <div class="cal-ev-colors" id="calEvColors"></div>
-    </div>
-    <div class="cal-gcal-link" id="calGcalLink"></div>
-    <button class="cal-save-btn" onclick="saveCalEvent()">Save Event</button>
-    <button class="cal-cancel-link" onclick="closeAddEvent()">Cancel</button>
-  </div>
-</div>
 
 <!-- ══ GLOBAL SEARCH OVERLAY ══ -->
 <div id="searchOverlay" class="search-overlay" style="display:none;">
