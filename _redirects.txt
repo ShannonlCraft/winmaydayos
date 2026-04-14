@@ -1,1 +1,2 @@
-/*    /index.html   200
+# Intentionally left without wildcard rewrite.
+# Keep this file if you later want custom redirects.
