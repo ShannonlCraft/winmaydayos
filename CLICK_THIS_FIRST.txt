@@ -1,0 +1,9 @@
+DO THIS EXACTLY:
+
+1) If you are on Windows, double-click: OPEN-IN-BROWSER.bat
+2) If you are on Mac, double-click: OPEN-IN-BROWSER.command
+
+That opens your website in a normal browser window.
+
+If double-clicking still opens code, right-click the file and choose:
+"Open with" -> "Google Chrome" (or Safari/Edge).
