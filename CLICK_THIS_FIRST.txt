@@ -1,7 +1,9 @@
 DO THIS EXACTLY:
 
-1) If you are on Windows, double-click: OPEN-IN-BROWSER.bat
-2) If you are on Mac, double-click: OPEN-IN-BROWSER.command
+IMPORTANT: "OPEN-IN-BROWSER.command" is a FILE NAME (not a coding command).
+
+1) If you are on Windows, double-click this file: OPEN-IN-BROWSER.bat
+2) If you are on Mac, double-click this file: OPEN-IN-BROWSER.command
 
 That opens your website in a normal browser window.
 
