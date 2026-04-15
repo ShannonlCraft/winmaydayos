@@ -1,0 +1,11 @@
+IF YOU ONLY SEE CODE IN A BIG BLACK BOX:
+
+You are probably opening files in a CODE EDITOR view, not a browser view.
+
+Try this:
+1) Click the file named index.html
+2) Look near the top-right for a button like: Preview / Open / Open in Browser / Open in new tab
+3) Click that button
+
+If you still cannot find that button, tell me exactly what buttons you DO see,
+and I will give you click-by-click instructions using your exact screen labels.

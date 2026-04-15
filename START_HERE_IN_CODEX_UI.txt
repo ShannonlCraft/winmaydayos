@@ -1,0 +1,14 @@
+YOU ARE CURRENTLY IN A CODE REVIEW SCREEN (DIFF VIEW).
+That screen shows CODE only. It does NOT run websites.
+
+Do this instead:
+
+1) Click "View PR" (top-right).
+2) Merge the PR.
+3) Open the repo on GitHub.
+4) Click the green "Code" button.
+5) Click "Download ZIP".
+6) Unzip it on your computer.
+7) Double-click: ONE_CLICK_PREVIEW.html
+
+That will open the website in your normal browser.
