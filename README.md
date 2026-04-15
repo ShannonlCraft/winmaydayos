@@ -31,3 +31,8 @@ Use Netlify Drag-and-Drop:
 
 - In `download.html`, replace the `Download Ebook` button link (`href="#"`) with your real ebook URL.
 - Replace placeholder text in `about.html` and `reflections.html` when ready.
+
+## One-click preview link
+
+- Open `ONE_CLICK_PREVIEW_LINK.txt` and click the full `data:text/html...` link.
+- Or open `ONE_CLICK_PREVIEW.html` directly.
