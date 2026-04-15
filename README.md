@@ -34,5 +34,5 @@ Use Netlify Drag-and-Drop:
 
 ## One-click preview link
 
-- Open `ONE_CLICK_PREVIEW_LINK.txt` and click the full `data:text/html...` link.
-- Or open `ONE_CLICK_PREVIEW.html` directly.
+- Open `ONE_CLICK_PREVIEW.html` directly.
+- If you are inside Codex diff view, read `START_HERE_IN_CODEX_UI.txt` first.
